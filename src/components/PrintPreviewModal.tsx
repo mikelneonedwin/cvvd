@@ -70,8 +70,8 @@ export function PrintPreviewModal() {
     count?: number
   }> = [
     { key: 'about', label: 'About' },
-    { key: 'experience', label: 'Work Experience', count: experience.length },
-    { key: 'projects', label: 'Side Projects', count: projects.length },
+    { key: 'experience', label: 'Work experience', count: experience.length },
+    { key: 'projects', label: 'Side projects', count: projects.length },
     { key: 'writing', label: 'Writing', count: writing.length },
     { key: 'education', label: 'Education', count: education.length },
     { key: 'skills', label: 'Skills', count: skillCategories.length },
@@ -232,7 +232,7 @@ export function PrintPreviewModal() {
                           role="switch"
                           aria-checked={isChecked}
                           onClick={() => toggleSection(sec.key)}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--grey1)] focus-visible:ring-offset-2 ${
                             isChecked
                               ? 'bg-[var(--grey1)]'
                               : 'bg-[var(--grey4)] dark:bg-neutral-700'
@@ -278,7 +278,7 @@ export function PrintPreviewModal() {
                       role="switch"
                       aria-checked={printSettings.showAvatarInPrint}
                       onClick={toggleAvatar}
-                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--grey1)] focus-visible:ring-offset-2 ${
                         printSettings.showAvatarInPrint
                           ? 'bg-[var(--grey1)]'
                           : 'bg-[var(--grey4)] dark:bg-neutral-700'
@@ -363,7 +363,7 @@ export function PrintPreviewModal() {
                     {sectionVisibility.experience && experience.length > 0 && (
                       <div>
                         <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
-                          Work Experience
+                          Work experience
                         </h2>
                         <div className="space-y-3">
                           {experience.map((item) => (
@@ -387,7 +387,7 @@ export function PrintPreviewModal() {
                     {sectionVisibility.projects && projects.length > 0 && (
                       <div>
                         <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
-                          Side Projects
+                          Side projects
                         </h2>
                         <div className="space-y-2">
                           {projects.map((proj) => (
@@ -397,6 +397,25 @@ export function PrintPreviewModal() {
                                 <div className="text-neutral-500 font-mono text-[9.5px]">{proj.year}</div>
                               </div>
                               {proj.description && <p className="text-neutral-700 mt-0.5">{proj.description}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {sectionVisibility.writing && writing.length > 0 && (
+                      <div>
+                        <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
+                          Writing
+                        </h2>
+                        <div className="space-y-2">
+                          {writing.map((w) => (
+                            <div key={w.id} className="text-[10px]">
+                              <div className="flex justify-between items-baseline">
+                                <div className="font-medium text-black">{w.title}</div>
+                                <div className="text-neutral-500 font-mono text-[9.5px]">{w.year}</div>
+                              </div>
+                              {w.publication && <div className="text-neutral-500 text-[9px]">{w.publication}</div>}
                             </div>
                           ))}
                         </div>
@@ -518,7 +537,7 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.experience && experience.length > 0 && (
                         <div>
-                          <h2 className="text-[10.5px] font-medium text-black mb-1">Work Experience</h2>
+                          <h2 className="text-[10.5px] font-medium text-black mb-1">Work experience</h2>
                           <div className="space-y-2.5">
                             {experience.map((item) => (
                               <div key={item.id} className="text-[9.5px]">
@@ -538,7 +557,7 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.projects && projects.length > 0 && (
                         <div>
-                          <h2 className="text-[10.5px] font-medium text-black mb-1">Side Projects</h2>
+                          <h2 className="text-[10.5px] font-medium text-black mb-1">Side projects</h2>
                           <div className="space-y-2 text-[9.5px]">
                             {projects.map((proj) => (
                               <div key={proj.id}>
@@ -547,6 +566,23 @@ export function PrintPreviewModal() {
                                   <div className="text-neutral-400 font-mono text-[8.5px]">{proj.year}</div>
                                 </div>
                                 {proj.description && <p className="text-neutral-700 mt-0.5">{proj.description}</p>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {sectionVisibility.writing && writing.length > 0 && (
+                        <div>
+                          <h2 className="text-[10.5px] font-medium text-black mb-1">Writing</h2>
+                          <div className="space-y-2 text-[9.5px]">
+                            {writing.map((w) => (
+                              <div key={w.id}>
+                                <div className="flex justify-between items-baseline">
+                                  <div className="font-medium text-black">{w.title}</div>
+                                  <div className="text-neutral-400 font-mono text-[8.5px]">{w.year}</div>
+                                </div>
+                                {w.publication && <div className="text-neutral-500 text-[8.5px]">{w.publication}</div>}
                               </div>
                             ))}
                           </div>
@@ -604,7 +640,7 @@ export function PrintPreviewModal() {
                       {sectionVisibility.experience && experience.length > 0 && (
                         <div>
                           <h2 className="text-[11px] font-medium text-black mb-1">
-                            Work Experience
+                            Work experience
                           </h2>
                           <div className="space-y-3">
                             {experience.map((item) => (
@@ -639,7 +675,7 @@ export function PrintPreviewModal() {
                       {sectionVisibility.projects && projects.length > 0 && (
                         <div>
                           <h2 className="text-[11px] font-medium text-black mb-1">
-                            Side Projects
+                            Side projects
                           </h2>
                           <div className="space-y-2">
                             {projects.map((proj) => (

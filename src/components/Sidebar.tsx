@@ -52,7 +52,12 @@ export function Sidebar() {
     const reader = new FileReader()
     reader.onload = (event) => {
       try {
-        const text = event.target?.result as string
+        const text =
+          typeof event.target?.result === 'string' ? event.target.result : ''
+        if (!text) {
+          showToast('Could not read file contents')
+          return
+        }
         const parsed = JSON.parse(text)
         if (parsed.basics && parsed.experience) {
           importProfile(parsed)
@@ -115,23 +120,23 @@ export function Sidebar() {
       >
         {/* Top: Logo & Main Navigation */}
         <div className="space-y-6">
-          {/* read.cv Logo Mark */}
+          {/* cvvd Logo Mark */}
           <div className="flex items-center gap-2.5 px-2">
             <div className="text-[var(--grey1)]">
               <ReadCvLogo className="w-6 h-6" />
             </div>
             <span className="font-medium text-[15px] tracking-tight text-[var(--grey1)]">
-              read.cv
+              cvvd
             </span>
           </div>
 
-          {/* read.cv Platform Nav Items */}
+          {/* Navigation Items */}
           <nav className="space-y-0.5 text-[14px]" aria-label="Main Navigation">
             <a
               href="#explore"
               onClick={(e) => {
                 e.preventDefault()
-                showToast('read.cv Explore feed')
+                showToast('Explore feed')
               }}
               className="flex items-center gap-3 px-2 py-2 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors"
             >
@@ -143,7 +148,7 @@ export function Sidebar() {
               href="#open-roles"
               onClick={(e) => {
                 e.preventDefault()
-                showToast('read.cv Curated job board')
+                showToast('Curated job board')
               }}
               className="flex items-center gap-3 px-2 py-2 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors"
             >
@@ -165,7 +170,7 @@ export function Sidebar() {
               href="#posts"
               onClick={(e) => {
                 e.preventDefault()
-                showToast('read.cv Posts network')
+                showToast('Posts network')
               }}
               className="flex items-center gap-3 px-2 py-2 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors"
             >
@@ -305,7 +310,7 @@ export function Sidebar() {
               <button
                 type="button"
                 onClick={() => setShowResetConfirm(true)}
-                aria-label="Reset to default read.cv template"
+                aria-label="Reset to default template"
                 className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-[var(--grey3)] hover:text-red-500 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -342,7 +347,7 @@ export function Sidebar() {
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             <span className="text-[12px] text-[var(--grey2)] truncate font-mono">
-              {profile.basics.handle || 'read.cv'}
+              {profile.basics.handle || 'cvvd'}
             </span>
           </div>
 

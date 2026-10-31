@@ -18,7 +18,7 @@ export function ExperienceSection() {
       data-print={sectionVisibility.experience ? 'true' : 'false'}
       className="readcv-section"
     >
-      <h3 className="readcv-section-heading">Work Experience</h3>
+      <h3 className="readcv-section-heading">Work experience</h3>
       <div className={isEditorial ? '' : 'space-y-6'}>
         {experience.map((item) => {
           if (!isEditorial) {

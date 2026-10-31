@@ -18,7 +18,7 @@ export function ProjectsSection() {
       data-print={sectionVisibility.projects ? 'true' : 'false'}
       className="readcv-section"
     >
-      <h3 className="readcv-section-heading">Side Projects</h3>
+      <h3 className="readcv-section-heading">Side projects</h3>
       <div className={isEditorial ? '' : 'space-y-5'}>
         {projects.map((project) => {
           if (!isEditorial) {

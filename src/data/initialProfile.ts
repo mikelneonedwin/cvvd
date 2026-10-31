@@ -5,7 +5,7 @@ const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/200
 export const initialProfile: UserProfile = {
   basics: {
     name: 'Elena Vance',
-    handle: 'read.cv/elena',
+    handle: 'cvvd/elena',
     headline: 'Staff Product Designer and Creative Technologist',
     avatarUrl: defaultAvatar,
     status: {

@@ -21,20 +21,18 @@ export function CVProfile() {
     return (
       <main className="w-full flex justify-center py-10 sm:py-14 px-4 sm:px-8">
         <div
-          className={`readcv-container ${presetClass} w-full max-w-[840px] ${densityClass} ${avatarClass}`}
+          className={`readcv-container ${presetClass} w-full max-w-[840px] grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 md:gap-14 items-start ${densityClass} ${avatarClass}`}
         >
-          <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 md:gap-14 items-start">
-            <div className="space-y-8 readcv-left-column w-full">
-              <ProfileHero />
-              <EducationSection />
-              <SkillsSection />
-            </div>
-            <div className="space-y-8 readcv-right-column w-full min-w-0">
-              <AboutSection />
-              <ExperienceSection />
-              <ProjectsSection />
-              <WritingSection />
-            </div>
+          <div className="space-y-8 readcv-left-column w-full">
+            <ProfileHero />
+            <EducationSection />
+            <SkillsSection />
+          </div>
+          <div className="space-y-8 readcv-right-column w-full min-w-0">
+            <AboutSection />
+            <ExperienceSection />
+            <ProjectsSection />
+            <WritingSection />
           </div>
         </div>
       </main>

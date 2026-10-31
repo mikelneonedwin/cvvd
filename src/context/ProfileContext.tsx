@@ -17,7 +17,8 @@ import type {
 } from '../types/profile'
 import { initialProfile } from '../data/initialProfile'
 
-const STORAGE_KEY = 'readcv_profile_v2'
+const STORAGE_KEY = 'cvvd_profile_v2'
+const LEGACY_STORAGE_KEY = 'readcv_profile_v2'
 
 interface ProfileContextValue {
   profile: UserProfile
@@ -46,7 +47,9 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(undefined)
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY)
+      const saved =
+        localStorage.getItem(STORAGE_KEY) ||
+        localStorage.getItem(LEGACY_STORAGE_KEY)
       if (saved) {
         const parsed = JSON.parse(saved)
         if (parsed.basics && parsed.experience) {
@@ -141,7 +144,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   const resetProfile = () => {
     setProfile(initialProfile)
-    showToast('Reset to default read.cv template')
+    showToast('Reset to default cvvd template')
   }
 
   const importProfile = (data: UserProfile) => {

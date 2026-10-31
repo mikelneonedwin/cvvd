@@ -36,6 +36,25 @@ type EditorTab =
   | 'skills'
   | 'layout'
 
+function isAvailabilityState(val: string): val is AvailabilityState {
+  return ['available', 'employed', 'freelance', 'busy'].includes(val)
+}
+
+function isSocialPlatform(val: string): val is SocialPlatform {
+  return [
+    'website',
+    'github',
+    'twitter',
+    'linkedin',
+    'email',
+    'other',
+  ].includes(val)
+}
+
+function isPrintDensity(val: string): val is 'comfortable' | 'compact' {
+  return val === 'comfortable' || val === 'compact'
+}
+
 export function ProfileEditor() {
   const {
     profile,
@@ -221,7 +240,12 @@ export function ProfileEditor() {
     const reader = new FileReader()
     reader.onload = (event) => {
       try {
-        const text = event.target?.result as string
+        const text =
+          typeof event.target?.result === 'string' ? event.target.result : ''
+        if (!text) {
+          showToast('Could not read file contents')
+          return
+        }
         const parsed = JSON.parse(text)
         if (parsed.basics && parsed.experience) {
           importProfile(parsed)
@@ -383,7 +407,7 @@ export function ProfileEditor() {
 
             <div>
               <label className="block text-xs font-mono text-neutral-500 mb-1">
-                read.cv Handle
+                cvvd Handle
               </label>
               <input
                 type="text"
@@ -424,14 +448,17 @@ export function ProfileEditor() {
                 </label>
                 <select
                   value={profile.basics.status.state}
-                  onChange={(e) =>
-                    updateBasics({
-                      status: {
-                        ...profile.basics.status,
-                        state: e.target.value as AvailabilityState,
-                      },
-                    })
-                  }
+                  onChange={(e) => {
+                    const nextVal = e.target.value
+                    if (isAvailabilityState(nextVal)) {
+                      updateBasics({
+                        status: {
+                          ...profile.basics.status,
+                          state: nextVal,
+                        },
+                      })
+                    }
+                  }}
                   className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-1 focus:ring-neutral-400 text-xs"
                 >
                   <option value="available">Available</option>
@@ -523,11 +550,14 @@ export function ProfileEditor() {
                   >
                     <select
                       value={link.platform}
-                      onChange={(e) =>
-                        handleUpdateLink(link.id, {
-                          platform: e.target.value as SocialPlatform,
-                        })
-                      }
+                      onChange={(e) => {
+                        const nextVal = e.target.value
+                        if (isSocialPlatform(nextVal)) {
+                          handleUpdateLink(link.id, {
+                            platform: nextVal,
+                          })
+                        }
+                      }}
                       className="px-2 py-1 rounded border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs"
                     >
                       <option value="website">Website</option>
@@ -1184,11 +1214,14 @@ export function ProfileEditor() {
                   </label>
                   <select
                     value={profile.printSettings.density}
-                    onChange={(e) =>
-                      updatePrintSettings({
-                        density: e.target.value as 'comfortable' | 'compact',
-                      })
-                    }
+                    onChange={(e) => {
+                      const nextVal = e.target.value
+                      if (isPrintDensity(nextVal)) {
+                        updatePrintSettings({
+                          density: nextVal,
+                        })
+                      }
+                    }}
                     className="w-full px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs"
                   >
                     <option value="comfortable">Comfortable (Standard read.cv)</option>
