@@ -105,7 +105,7 @@ function ProfileHandlePage() {
         `${basics.headline} ${basics.location ? `in ${basics.location}` : ''}`
       )
     let ogUrl = document.querySelector('meta[property="og:url"]')
-    if (ogUrl) ogUrl.setAttribute('content', `https://cvvd.vercel.app/${cleanHandle}`)
+    if (ogUrl) ogUrl.setAttribute('content', `https://cvvd.vercel.app/profile/${cleanHandle}`)
     let ogImage = document.querySelector('meta[property="og:image"]')
     if (!ogImage && basics.avatarUrl) {
       ogImage = document.createElement('meta')
@@ -144,7 +144,7 @@ function ProfileHandlePage() {
       jobTitle: basics.headline,
       description: basics.summary,
       image: basics.avatarUrl,
-      url: `https://cvvd.vercel.app/${cleanHandle}`,
+      url: `https://cvvd.vercel.app/profile/${cleanHandle}`,
       sameAs: basics.links.map((l) => l.url),
     })
     if (!document.getElementById('person-jsonld')) {
