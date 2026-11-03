@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
   type ReactNode,
 } from 'react'
 import type {
@@ -37,6 +38,7 @@ interface ProfileContextValue {
   updateSectionVisibility: (visibility: Partial<SectionVisibility>) => void
   updatePrintSettings: (settings: Partial<PrintSettings>) => void
   resetProfile: () => void
+  loadProfile: (data: UserProfile) => void
   importProfile: (data: UserProfile) => void
   exportProfileJson: () => void
   triggerPrint: () => void
@@ -47,23 +49,25 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(undefined)
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(() => {
     try {
-      const saved =
-        localStorage.getItem(STORAGE_KEY) ||
-        localStorage.getItem(LEGACY_STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (parsed.basics && parsed.experience) {
-          return {
-            ...initialProfile,
-            ...parsed,
-            sectionVisibility: {
-              ...initialProfile.sectionVisibility,
-              ...(parsed.sectionVisibility || {}),
-            },
-            printSettings: {
-              ...initialProfile.printSettings,
-              ...(parsed.printSettings || {}),
-            },
+      if (typeof window !== 'undefined') {
+        const saved =
+          localStorage.getItem(STORAGE_KEY) ||
+          localStorage.getItem(LEGACY_STORAGE_KEY)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (parsed.basics && parsed.experience) {
+            return {
+              ...initialProfile,
+              ...parsed,
+              sectionVisibility: {
+                ...initialProfile.sectionVisibility,
+                ...(parsed.sectionVisibility || {}),
+              },
+              printSettings: {
+                ...initialProfile.printSettings,
+                ...(parsed.printSettings || {}),
+              },
+            }
           }
         }
       }
@@ -85,14 +89,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }, [profile])
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     setToastMessage(msg)
     window.setTimeout(() => {
       setToastMessage((current) => (current === msg ? null : current))
     }, 2800)
-  }
+  }, [])
 
-  const updateBasics = (partial: Partial<ProfileBasics>) => {
+  const updateBasics = useCallback((partial: Partial<ProfileBasics>) => {
     setProfile((prev) => ({
       ...prev,
       basics: {
@@ -100,29 +104,29 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         ...partial,
       },
     }))
-  }
+  }, [])
 
-  const updateExperience = (experience: WorkExperience[]) => {
+  const updateExperience = useCallback((experience: WorkExperience[]) => {
     setProfile((prev) => ({ ...prev, experience }))
-  }
+  }, [])
 
-  const updateProjects = (projects: ProjectItem[]) => {
+  const updateProjects = useCallback((projects: ProjectItem[]) => {
     setProfile((prev) => ({ ...prev, projects }))
-  }
+  }, [])
 
-  const updateWriting = (writing: UserProfile['writing']) => {
+  const updateWriting = useCallback((writing: UserProfile['writing']) => {
     setProfile((prev) => ({ ...prev, writing }))
-  }
+  }, [])
 
-  const updateEducation = (education: EducationItem[]) => {
+  const updateEducation = useCallback((education: EducationItem[]) => {
     setProfile((prev) => ({ ...prev, education }))
-  }
+  }, [])
 
-  const updateSkills = (skillCategories: SkillCategory[]) => {
+  const updateSkills = useCallback((skillCategories: SkillCategory[]) => {
     setProfile((prev) => ({ ...prev, skillCategories }))
-  }
+  }, [])
 
-  const updateSectionVisibility = (visibility: Partial<SectionVisibility>) => {
+  const updateSectionVisibility = useCallback((visibility: Partial<SectionVisibility>) => {
     setProfile((prev) => ({
       ...prev,
       sectionVisibility: {
@@ -130,9 +134,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         ...visibility,
       },
     }))
-  }
+  }, [])
 
-  const updatePrintSettings = (settings: Partial<PrintSettings>) => {
+  const updatePrintSettings = useCallback((settings: Partial<PrintSettings>) => {
     setProfile((prev) => ({
       ...prev,
       printSettings: {
@@ -140,14 +144,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         ...settings,
       },
     }))
-  }
+  }, [])
 
-  const resetProfile = () => {
+  const resetProfile = useCallback(() => {
     setProfile(initialProfile)
     showToast('Reset to default cvvd template')
-  }
+  }, [showToast])
 
-  const importProfile = (data: UserProfile) => {
+  const loadProfile = useCallback((data: UserProfile) => {
     setProfile({
       ...initialProfile,
       ...data,
@@ -160,10 +164,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         ...(data.printSettings || {}),
       },
     })
-    showToast('Profile imported successfully')
-  }
+  }, [])
 
-  const exportProfileJson = () => {
+  const importProfile = useCallback((data: UserProfile) => {
+    loadProfile(data)
+    showToast('Profile imported successfully')
+  }, [loadProfile, showToast])
+
+  const exportProfileJson = useCallback(() => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(profile, null, 2))
     const downloadAnchor = document.createElement('a')
     downloadAnchor.setAttribute('href', dataStr)
@@ -173,11 +181,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     downloadAnchor.click()
     downloadAnchor.remove()
     showToast('Downloaded profile JSON')
-  }
+  }, [profile, showToast])
 
-  const triggerPrint = () => {
+  const triggerPrint = useCallback(() => {
     window.print()
-  }
+  }, [])
 
   return (
     <ProfileContext.Provider
@@ -198,6 +206,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         updateSectionVisibility,
         updatePrintSettings,
         resetProfile,
+        loadProfile,
         importProfile,
         exportProfileJson,
         triggerPrint,

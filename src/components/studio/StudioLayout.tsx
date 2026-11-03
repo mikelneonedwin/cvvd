@@ -1,0 +1,168 @@
+import type { UserProfile, LayoutPreset } from '../../types/profile'
+
+interface StudioLayoutProps {
+  form: UserProfile
+  setForm: (val: UserProfile) => void
+}
+
+interface LayoutOption {
+  id: LayoutPreset
+  title: string
+  desc: string
+}
+
+const LAYOUT_OPTIONS: readonly LayoutOption[] = [
+  {
+    id: 'editorial',
+    title: 'Editorial',
+    desc: 'Authentic read.cv asymmetric layout with 100px duration gutter.',
+  },
+  {
+    id: 'single-column',
+    title: 'Single Column',
+    desc: 'Classic chronological layout with right-aligned dates and section dividers.',
+  },
+  {
+    id: 'balanced',
+    title: 'Balanced',
+    desc: 'Two-column split separating left toolkit from right timeline.',
+  },
+]
+
+export function StudioLayout({ form, setForm }: StudioLayoutProps) {
+  return (
+    <div className="space-y-8 animate-fadeIn">
+      <div>
+        <h2 className="text-lg font-medium text-[var(--grey1)]">
+          Layout and print preferences
+        </h2>
+        <p className="text-xs text-[var(--grey3)] mt-0.5">
+          Choose how your profile renders online and formats during PDF printing.
+        </p>
+      </div>
+
+      {/* Layout Presets Selection */}
+      <div className="space-y-3">
+        <label className="block text-xs font-mono text-[var(--grey3)] uppercase tracking-wider">
+          Default layout preset
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {LAYOUT_OPTIONS.map(({ id, title, desc }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() =>
+                setForm({
+                  ...form,
+                  printSettings: {
+                    ...form.printSettings,
+                    layoutPreset: id,
+                  },
+                })
+              }
+              className={`p-4 rounded-xl border text-left min-h-[96px] transition-all active:scale-98 ${
+                form.printSettings.layoutPreset === id
+                  ? 'border-[var(--grey1)] bg-[var(--inputBackgroundColor)]/80 ring-1 ring-[var(--grey1)]'
+                  : 'border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] hover:bg-[var(--grey5)]'
+              }`}
+            >
+              <div className="font-medium text-sm text-[var(--grey1)]">
+                {title}
+              </div>
+              <div className="text-xs text-[var(--grey3)] mt-1 leading-relaxed">
+                {desc}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Print Options */}
+      <div className="space-y-4 pt-4 border-t border-[var(--secondaryBorderColor)]">
+        <span className="text-xs font-mono text-[var(--grey3)] uppercase tracking-wider">
+          Print options
+        </span>
+
+        <div className="p-4 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/30 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-[var(--grey1)]">
+                Print Spacing Density
+              </div>
+              <div className="text-xs text-[var(--grey3)]">
+                Compact reduces line-heights and margins to fit tight 1-page CVs.
+              </div>
+            </div>
+            <select
+              value={form.printSettings.density}
+              onChange={(e) => {
+                const density = e.target.value === 'compact' ? 'compact' : 'comfortable'
+                setForm({
+                  ...form,
+                  printSettings: {
+                    ...form.printSettings,
+                    density,
+                  },
+                })
+              }}
+              className="px-3 min-h-[44px] rounded-lg border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-medium text-[var(--grey1)]"
+            >
+              <option value="comfortable">Comfortable (Standard)</option>
+              <option value="compact">Compact (Tight fit)</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t border-[var(--secondaryBorderColor)] min-h-[44px]">
+            <div>
+              <div className="text-sm font-medium text-[var(--grey1)]">
+                Include Photo in Printed CV
+              </div>
+              <div className="text-xs text-[var(--grey3)]">
+                Hidden by default in authentic read.cv sheets.
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              checked={form.printSettings.showAvatarInPrint}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  printSettings: {
+                    ...form.printSettings,
+                    showAvatarInPrint: e.target.checked,
+                  },
+                })
+              }
+              className="w-5 h-5 rounded border-[var(--secondaryBorderColor)] text-[var(--grey1)] cursor-pointer"
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t border-[var(--secondaryBorderColor)] min-h-[44px]">
+            <div>
+              <div className="text-sm font-medium text-[var(--grey1)]">
+                Include Links in Printed CV
+              </div>
+              <div className="text-xs text-[var(--grey3)]">
+                Print full URLs alongside linked items.
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              checked={form.printSettings.includeLinksInPrint}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  printSettings: {
+                    ...form.printSettings,
+                    includeLinksInPrint: e.target.checked,
+                  },
+                })
+              }
+              className="w-5 h-5 rounded border-[var(--secondaryBorderColor)] text-[var(--grey1)] cursor-pointer"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

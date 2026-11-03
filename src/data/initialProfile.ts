@@ -1,6 +1,7 @@
 import type { UserProfile } from '../types/profile'
 
-const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160"><circle cx="80" cy="80" r="80" fill="%23222222"/><circle cx="80" cy="64" r="28" fill="%23d4d4d8"/><path d="M36 142 C44 104, 116 104, 124 142" fill="%23d4d4d8"/></svg>'
+const defaultAvatar =
+  'https://res.cloudinary.com/winneredwin/image/upload/v1793721346/cvvd/avatars/elena.svg'
 
 export const initialProfile: UserProfile = {
   basics: {

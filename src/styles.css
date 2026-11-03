@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Rock-solid button and control theme contrast classes */
+.btn-primary {
+  background-color: #111111;
+  color: #ffffff !important;
+}
+
+:root.dark .btn-primary,
+.dark .btn-primary {
+  background-color: #ffffff;
+  color: #111111 !important;
+}
+
+.pill-active {
+  background-color: #111111;
+  color: #ffffff !important;
+}
+
+:root.dark .pill-active,
+.dark .pill-active {
+  background-color: #ffffff;
+  color: #111111 !important;
+}
+
 :root {
   --type-size: 14px;
   --secondary-type-size: 12px;
@@ -61,11 +86,17 @@ body {
 /* Accessibility focus visible rings */
 button:focus-visible,
 a:focus-visible,
-input:focus-visible,
+input:focus-visible:not(.no-focus-ring),
 select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--grey1) !important;
   outline-offset: 2px !important;
+}
+
+input.no-focus-ring:focus-visible,
+input.no-focus-ring:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* Typography styles matching read.cv */

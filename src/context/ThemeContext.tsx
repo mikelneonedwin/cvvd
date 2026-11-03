@@ -15,9 +15,11 @@ const STORAGE_KEY = 'cvvd_theme_preference'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved === 'light' || saved === 'dark' || saved === 'system') {
-      return saved
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved === 'light' || saved === 'dark' || saved === 'system') {
+        return saved
+      }
     }
     return 'system'
   })
@@ -25,7 +27,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (theme === 'dark') return true
     if (theme === 'light') return false
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+    return false
   })
 
   useEffect(() => {

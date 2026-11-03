@@ -89,6 +89,40 @@ export interface SectionVisibility {
 
 export type LayoutPreset = 'editorial' | 'single-column' | 'balanced'
 
+export const AVAILABILITY_STATES: readonly AvailabilityState[] = [
+  'available',
+  'employed',
+  'freelance',
+  'busy',
+]
+
+export function isAvailabilityState(value: string): value is AvailabilityState {
+  return (AVAILABILITY_STATES as readonly string[]).includes(value)
+}
+
+export const SOCIAL_PLATFORMS: readonly SocialPlatform[] = [
+  'website',
+  'github',
+  'twitter',
+  'linkedin',
+  'email',
+  'other',
+]
+
+export function isSocialPlatform(value: string): value is SocialPlatform {
+  return (SOCIAL_PLATFORMS as readonly string[]).includes(value)
+}
+
+export const LAYOUT_PRESETS: readonly LayoutPreset[] = [
+  'editorial',
+  'single-column',
+  'balanced',
+]
+
+export function isLayoutPreset(value: string): value is LayoutPreset {
+  return (LAYOUT_PRESETS as readonly string[]).includes(value)
+}
+
 export interface PrintSettings {
   density: 'comfortable' | 'compact'
   showAvatarInPrint: boolean

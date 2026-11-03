@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://cvvd.vercel.app/sitemap.xml
