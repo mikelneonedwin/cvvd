@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "generate-routes": "tsr generate",
+    "check-env": "node -r dotenv/config -e 'import(\"./src/env.js\")'",
     "build": "vite build",
     "preview": "vite preview"
   },
