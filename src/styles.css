@@ -70,6 +70,7 @@ html,
 body,
 #app {
   min-height: 100%;
+  scroll-padding-top: 3.5rem;
 }
 
 body {
@@ -380,9 +381,9 @@ a {
     position: static !important;
     width: 100% !important;
     margin: 0 0 16px 0 !important;
-    padding: 0 0 10px 0 !important;
+    padding: 0 !important;
     display: block !important;
-    border-bottom: 1px solid #e5e5e5 !important;
+    border: none !important;
   }
   .layout-single-column .readcv-badges {
     display: flex !important;
@@ -396,9 +397,9 @@ a {
     width: 100% !important;
   }
   .layout-single-column .readcv-section-heading {
-    border-bottom: 1px solid #e5e5e5 !important;
-    padding-bottom: 3px !important;
-    margin-bottom: 8px !important;
+    border: none !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 6px !important;
   }
   .layout-single-column .readcv-about-content {
     margin-left: 0 !important;

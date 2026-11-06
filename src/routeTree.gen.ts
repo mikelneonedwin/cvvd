@@ -10,11 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HandleRouteImport } from './routes/$handle'
 import { Route as EditRouteImport } from './routes/edit'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ProfileHandleRouteImport } from './routes/profile.$handle'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAvatarIdRouteImport } from './routes/api/avatar/$id'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api/trpc/$'
@@ -22,6 +22,11 @@ import { Route as ApiTrpcSplatRouteImport } from './routes/api/trpc/$'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HandleRoute = HandleRouteImport.update({
+  id: '/$handle',
+  path: '/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditRoute = EditRouteImport.update({
@@ -44,11 +49,6 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileHandleRoute = ProfileHandleRouteImport.update({
-  id: '/profile/$handle',
-  path: '/profile/$handle',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -67,22 +67,22 @@ const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$handle': typeof HandleRoute
   '/edit': typeof EditRoute
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/profile/$handle': typeof ProfileHandleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatar/$id': typeof ApiAvatarIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$handle': typeof HandleRoute
   '/edit': typeof EditRoute
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/profile/$handle': typeof ProfileHandleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatar/$id': typeof ApiAvatarIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -90,11 +90,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$handle': typeof HandleRoute
   '/edit': typeof EditRoute
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/profile/$handle': typeof ProfileHandleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatar/$id': typeof ApiAvatarIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -103,33 +103,33 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$handle'
     | '/edit'
     | '/explore'
     | '/login'
     | '/signup'
-    | '/profile/$handle'
     | '/api/auth/$'
     | '/api/avatar/$id'
     | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$handle'
     | '/edit'
     | '/explore'
     | '/login'
     | '/signup'
-    | '/profile/$handle'
     | '/api/auth/$'
     | '/api/avatar/$id'
     | '/api/trpc/$'
   id:
     | '__root__'
     | '/'
+    | '/$handle'
     | '/edit'
     | '/explore'
     | '/login'
     | '/signup'
-    | '/profile/$handle'
     | '/api/auth/$'
     | '/api/avatar/$id'
     | '/api/trpc/$'
@@ -137,11 +137,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HandleRoute: typeof HandleRoute
   EditRoute: typeof EditRoute
   ExploreRoute: typeof ExploreRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
-  ProfileHandleRoute: typeof ProfileHandleRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiAvatarIdRoute: typeof ApiAvatarIdRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
@@ -154,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$handle': {
+      id: '/$handle'
+      path: '/$handle'
+      fullPath: '/$handle'
+      preLoaderRoute: typeof HandleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/edit': {
@@ -184,13 +191,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile/$handle': {
-      id: '/profile/$handle'
-      path: '/profile/$handle'
-      fullPath: '/profile/$handle'
-      preLoaderRoute: typeof ProfileHandleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -217,11 +217,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HandleRoute: HandleRoute,
   EditRoute: EditRoute,
   ExploreRoute: ExploreRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
-  ProfileHandleRoute: ProfileHandleRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiAvatarIdRoute: ApiAvatarIdRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,

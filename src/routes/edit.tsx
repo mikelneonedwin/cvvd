@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
   User,
@@ -12,10 +12,11 @@ import {
   Save,
   Eye,
   Loader2,
+  LogOut,
 } from 'lucide-react'
 import { CvvdLogo } from '../components/CvvdIcons'
 import { trpc, trpcClient } from '../trpc/client'
-import { useSession } from '../lib/auth-client'
+import { useSession, signOut } from '../lib/auth-client'
 import { useProfile } from '../context/ProfileContext'
 import { Skeleton } from '../components/Skeleton'
 import type { UserProfile } from '../types/profile'
@@ -57,18 +58,29 @@ const STUDIO_TABS: readonly TabDefinition[] = [
 ]
 
 export function ProfileEditorPage() {
+  const navigate = useNavigate()
   const { data: session, isPending: isSessionLoading } = useSession()
   const { showToast } = useProfile()
   const [activeTab, setActiveTab] = useState<StudioTab>('basics')
   const [isSaving, setIsSaving] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
-  // Fetch logged in user's profile
+  // Redirect to login if unauthenticated once session check has completed
+  useEffect(() => {
+    if (!isSessionLoading && !session?.user) {
+      navigate({ to: '/login' })
+    }
+  }, [isSessionLoading, session, navigate])
+
+  // Fetch logged in user's profile only when authenticated
   const {
     data: profileData,
     isLoading: isProfileLoading,
     refetch,
-  } = useQuery(trpc.profile.getMine.queryOptions())
+  } = useQuery({
+    ...trpc.profile.getMine.queryOptions(),
+    enabled: !!session?.user,
+  })
 
   // Local draft state
   const [form, setForm] = useState<UserProfile | null>(null)
@@ -154,7 +166,7 @@ export function ProfileEditorPage() {
     }
   }
 
-  if (isSessionLoading || isProfileLoading) {
+  if (isSessionLoading || (session?.user && isProfileLoading)) {
     return (
       <div className="min-h-screen bg-[var(--backgroundColor)] p-6 max-w-4xl mx-auto space-y-6">
         <Skeleton className="h-10 w-48 rounded-lg" />
@@ -216,7 +228,7 @@ export function ProfileEditorPage() {
 
           <div className="flex items-center gap-2">
             <Link
-              to="/profile/$handle"
+              to="/$handle"
               params={{ handle: rawHandle || 'elena' }}
               className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3.5 rounded-xl text-xs font-medium text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] border border-[var(--secondaryBorderColor)] transition-colors active:scale-98"
             >
@@ -236,6 +248,19 @@ export function ProfileEditorPage() {
                 <Save className="w-3.5 h-3.5" />
               )}
               <span>{isSaving ? 'Saving...' : 'Save changes'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={async () => {
+                await signOut()
+                window.location.href = '/'
+              }}
+              aria-label="Sign out"
+              title="Sign out"
+              className="inline-flex items-center justify-center min-h-[44px] px-3 rounded-xl text-xs font-medium text-[var(--grey3)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] border border-[var(--secondaryBorderColor)] transition-colors active:scale-98 cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

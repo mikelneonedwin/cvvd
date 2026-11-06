@@ -9,11 +9,11 @@ import {
   Sun,
   Moon,
 } from 'lucide-react'
-import { CvvdLogo } from '../components/CvvdIcons'
+import { CvvdLogo, GitHubIcon } from '../components/CvvdIcons'
 import { trpc } from '../trpc/client'
 import { useSession } from '../lib/auth-client'
 import { useTheme } from '../context/ThemeContext'
-import { Skeleton } from '../components/Skeleton'
+import { FEATURED_CREATORS } from '../data/demoProfiles'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -29,7 +29,7 @@ export function HomePage() {
   const [desiredHandle, setDesiredHandle] = useState('')
   const [previewMode, setPreviewMode] = useState<PreviewMode>('web')
 
-  const { data: featuredCreators, isLoading: isCreatorsLoading } = useQuery(
+  const { data: featuredCreators } = useQuery(
     trpc.profile.listFeatured.queryOptions()
   )
 
@@ -49,7 +49,7 @@ export function HomePage() {
     }
   }
 
-  const creators = featuredCreators || []
+  const creators = featuredCreators && featuredCreators.length > 0 ? featuredCreators : FEATURED_CREATORS
 
   return (
     <div className="min-h-screen bg-[var(--backgroundColor)] text-[var(--grey1)] selection:bg-[var(--grey2)] selection:text-[var(--backgroundColor)] transition-colors duration-200">
@@ -61,11 +61,21 @@ export function HomePage() {
               <CvvdLogo className="w-7 h-7" />
             </div>
             <span className="font-semibold text-lg tracking-tight text-[var(--grey1)]">
-              cvvd
+              Cvvd
             </span>
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="https://github.com/mikelneonedwin/cvvd"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="View source on GitHub"
+              className="p-2 rounded-xl border border-[var(--secondaryBorderColor)] text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-850 transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+            >
+              <GitHubIcon className="w-4 h-4" />
+            </a>
+
             <button
               type="button"
               onClick={toggleTheme}
@@ -83,20 +93,12 @@ export function HomePage() {
                 Profile Studio
               </Link>
             ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  to="/signup"
-                  className="btn-primary px-3.5 py-1.5 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shrink-0 shadow-2xs"
-                >
-                  Claim handle
-                </Link>
-              </div>
+              <Link
+                to="/signup"
+                className="btn-primary px-3.5 py-1.5 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shrink-0 shadow-2xs"
+              >
+                Try it
+              </Link>
             )}
           </div>
         </div>
@@ -135,7 +137,7 @@ export function HomePage() {
             type="submit"
             className="btn-primary inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium shrink-0 hover:opacity-90 active:scale-98 transition-all shadow-2xs cursor-pointer"
           >
-            <span>Claim</span>
+            <span>Try it</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </form>
@@ -143,7 +145,7 @@ export function HomePage() {
         <div className="mt-4 text-xs text-[var(--grey3)]">
           <span>Free forever. Instant claim. Or </span>
           <Link
-            to="/profile/$handle"
+            to="/$handle"
             params={{ handle: 'elena' }}
             className="text-[var(--grey2)] underline hover:text-[var(--grey1)]"
           >
@@ -273,7 +275,7 @@ export function HomePage() {
               <div className="pt-4 border-t border-[var(--secondaryBorderColor)] flex items-center justify-between text-xs">
                 <span className="font-mono text-[var(--grey3)]">cvvd/elena</span>
                 <Link
-                  to="/profile/$handle"
+                  to="/$handle"
                   params={{ handle: 'elena' }}
                   className="inline-flex items-center gap-1 font-medium text-[var(--grey1)] hover:underline"
                 >
@@ -285,14 +287,14 @@ export function HomePage() {
           ) : (
             <div className="max-w-[620px] mx-auto bg-white text-neutral-900 p-8 sm:p-12 rounded-lg shadow-xl font-sans space-y-6 animate-fadeIn border border-neutral-200">
               {/* Publication Masthead */}
-              <div className="border-b border-neutral-300 pb-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="pb-2 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-2xl font-normal tracking-tight text-neutral-950">
                       Elena Vance
                     </h3>
                     <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest border border-neutral-300 px-1.5 py-0.5 rounded">
-                      cvvd
+                      Cvvd
                     </span>
                   </div>
                   <p className="text-xs text-neutral-700 font-medium">
@@ -309,10 +311,10 @@ export function HomePage() {
               </div>
 
               {/* Monospace Gutter Section Layout */}
-              <div className="space-y-5 text-xs">
+              <div className="space-y-6 text-xs">
                 {/* Work Experience */}
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 border-b border-neutral-200 pb-1 mb-3">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
                     Experience
                   </div>
                   <div className="space-y-4">
@@ -354,7 +356,7 @@ export function HomePage() {
 
                 {/* Selected Projects */}
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 border-b border-neutral-200 pb-1 mb-3">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
                     Side projects & Open Source
                   </div>
                   <div className="space-y-3">
@@ -376,7 +378,7 @@ export function HomePage() {
 
                 {/* Education */}
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 border-b border-neutral-200 pb-1 mb-3">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
                     Education & Credentials
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
@@ -396,7 +398,7 @@ export function HomePage() {
 
                 {/* Skills & Technologies */}
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 border-b border-neutral-200 pb-1 mb-3">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
                     Skills & Technologies
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
@@ -411,7 +413,7 @@ export function HomePage() {
               </div>
 
               {/* Sheet Calibrated Footer */}
-              <div className="pt-4 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between text-[10.5px] text-neutral-500 font-mono gap-2">
+              <div className="pt-4 flex flex-col sm:flex-row items-center justify-between text-[10.5px] text-neutral-500 font-mono gap-2">
                 <span>Pixel-calibrated PDF sheet (14mm margins)</span>
                 <span>Press ⌘P on profile to export</span>
               </div>
@@ -445,7 +447,7 @@ export function HomePage() {
               Publication-grade print sheets.
             </h3>
             <p className="text-xs text-[var(--grey3)] leading-relaxed">
-              When executive reviews or physical interviews call for paper, cvvd translates your digital profile into an authentic one-page CV sheet. Pixel-calibrated margins, monospace date gutters, density options, and zero awkward line cuts let you print cleanly from the browser.
+              When executive reviews or physical interviews call for paper, Cvvd translates your digital profile into an authentic one-page CV sheet. Pixel-calibrated margins, monospace date gutters, density options, and zero awkward line cuts let you print cleanly from the browser.
             </p>
           </div>
         </div>
@@ -461,90 +463,68 @@ export function HomePage() {
             Directory
           </span>
           <h2 className="text-xl font-normal text-[var(--grey1)] mt-0.5">
-            Profiles crafted with cvvd
+            Profiles crafted with Cvvd
           </h2>
         </div>
 
         {/* Directory Grid */}
-        {isCreatorsLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/30 space-y-3"
-              >
-                <div className="flex items-center gap-3">
-                  <Skeleton className="w-11 h-11 rounded-full" />
-                  <div className="space-y-1.5">
-                    <Skeleton className="w-28 h-4 rounded" />
-                    <Skeleton className="w-20 h-3 rounded" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {creators.map((creator) => (
+            <Link
+              key={creator.handle}
+              to="/$handle"
+              params={{ handle: creator.handle }}
+              className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/20 hover:bg-[var(--inputBackgroundColor)]/60 hover:border-[var(--grey3)] transition-all group block"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full overflow-hidden bg-[var(--grey4)] shrink-0 ring-1 ring-[var(--secondaryBorderColor)]">
+                  <img
+                    src={creator.avatarUrl}
+                    alt={creator.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <div className="font-normal text-sm text-[var(--grey1)] group-hover:underline">
+                    {creator.name}
+                  </div>
+                  <div className="text-[11px] font-mono text-[var(--grey3)]">
+                    cvvd/{creator.handle}
                   </div>
                 </div>
-                <Skeleton className="w-full h-3.5 rounded" />
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {creators.map((creator) => (
-              <Link
-                key={creator.handle}
-                to="/profile/$handle"
-                params={{ handle: creator.handle }}
-                className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/20 hover:bg-[var(--inputBackgroundColor)]/60 hover:border-[var(--grey3)] transition-all group block"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full overflow-hidden bg-[var(--grey4)] shrink-0 ring-1 ring-[var(--secondaryBorderColor)]">
-                    <img
-                      src={creator.avatarUrl}
-                      alt={creator.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="font-normal text-sm text-[var(--grey1)] group-hover:underline">
-                      {creator.name}
-                    </div>
-                    <div className="text-[11px] font-mono text-[var(--grey3)]">
-                      cvvd/{creator.handle}
-                    </div>
-                  </div>
-                </div>
 
-                <p className="mt-3 text-xs text-[var(--grey2)] line-clamp-2 leading-relaxed">
-                  {creator.headline}
-                </p>
+              <p className="mt-3 text-xs text-[var(--grey2)] line-clamp-2 leading-relaxed">
+                {creator.headline}
+              </p>
 
-                <div className="mt-3 pt-3 border-t border-[var(--secondaryBorderColor)] flex items-center justify-between text-[11px] text-[var(--grey3)] font-mono">
-                  <span>{creator.location}</span>
-                  <span className="text-[var(--grey2)] group-hover:text-[var(--grey1)]">
-                    View profile →
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+              <div className="mt-3 pt-3 border-t border-[var(--secondaryBorderColor)] flex items-center justify-between text-[11px] text-[var(--grey3)] font-mono">
+                <span>{creator.location}</span>
+                <span className="text-[var(--grey2)] group-hover:text-[var(--grey1)]">
+                  View profile →
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* Understated Minimalist Footer */}
       <footer className="py-12 px-4 sm:px-6 max-w-4xl mx-auto border-t border-[var(--secondaryBorderColor)] text-xs text-[var(--grey3)] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono">
         <div className="flex items-center gap-2">
           <CvvdLogo className="w-4 h-4 text-[var(--grey2)]" />
-          <span>cvvd - living profiles and printable CV engine</span>
+          <span>Cvvd - living profiles and printable CV engine</span>
         </div>
 
         <div className="flex items-center gap-4">
           <a
-            href="https://github.com"
+            href="https://github.com/mikelneonedwin/cvvd"
             target="_blank"
             rel="noreferrer"
             className="hover:text-[var(--grey1)] transition-colors"
           >
             MIT License
           </a>
-          <span>·</span>
-          <span>Press ⌘P on any profile to print</span>
         </div>
       </footer>
     </div>

@@ -11,10 +11,10 @@ import { Skeleton } from '../components/Skeleton'
 export const Route = createFileRoute('/explore')({
   head: () => ({
     meta: [
-      { title: 'Explore Creators - cvvd' },
-      { name: 'description', content: 'Browse all creators, designers, and engineers on cvvd.' },
-      { property: 'og:title', content: 'Explore Creators - cvvd' },
-      { property: 'og:description', content: 'Browse all creators, designers, and engineers on cvvd.' },
+      { title: 'Explore Creators - Cvvd' },
+      { name: 'description', content: 'Browse all creators, designers, and engineers on Cvvd.' },
+      { property: 'og:title', content: 'Explore Creators - Cvvd' },
+      { property: 'og:description', content: 'Browse all creators, designers, and engineers on Cvvd.' },
       { property: 'og:url', content: 'https://cvvd.vercel.app/explore' },
     ],
   }),
@@ -53,7 +53,7 @@ function ExplorePage() {
                 <CvvdLogo className="w-7 h-7" />
               </div>
               <span className="font-semibold text-lg tracking-tight text-[var(--grey1)]">
-                cvvd
+                Cvvd
               </span>
             </Link>
             <div className="h-4 w-px bg-[var(--secondaryBorderColor)] hidden sm:block" />
@@ -80,20 +80,12 @@ function ExplorePage() {
                 Profile Studio
               </Link>
             ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  to="/signup"
-                  className="btn-primary px-3.5 py-1.5 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shrink-0 shadow-2xs"
-                >
-                  Claim handle
-                </Link>
-              </div>
+              <Link
+                to="/signup"
+                className="btn-primary px-3.5 py-1.5 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shrink-0 shadow-2xs"
+              >
+                Try it
+              </Link>
             )}
           </div>
         </div>
@@ -111,7 +103,7 @@ function ExplorePage() {
               <span>Back home</span>
             </Link>
             <h1 className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--grey1)]">
-              People who build on cvvd
+              People who build on Cvvd
             </h1>
             <p className="mt-1 text-xs text-[var(--grey3)]">
               Explore profiles, portfolios, and publication-grade CVs across the platform.
@@ -166,7 +158,7 @@ function ExplorePage() {
             {filteredUsers.map((user) => (
               <Link
                 key={user.handle}
-                to="/profile/$handle"
+                to="/$handle"
                 params={{ handle: user.handle }}
                 className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/20 hover:bg-[var(--inputBackgroundColor)]/60 hover:border-[var(--grey3)] transition-all group block"
               >

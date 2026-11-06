@@ -18,7 +18,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'cvvd - Living Profiles and Printable CV Engine' },
+      { title: 'Cvvd - Living Profiles and Printable CV Engine' },
       {
         name: 'description',
         content:
@@ -26,7 +26,7 @@ export const Route = createRootRoute({
       },
       {
         property: 'og:title',
-        content: 'cvvd - Living Profiles and Printable CV Engine',
+        content: 'Cvvd - Living Profiles and Printable CV Engine',
       },
       {
         property: 'og:description',
@@ -34,12 +34,12 @@ export const Route = createRootRoute({
           'A clean, presentable home for your work, your story, and your printable CV.',
       },
       { property: 'og:type', content: 'website' },
-      { property: 'og:site_name', content: 'cvvd' },
+      { property: 'og:site_name', content: 'Cvvd' },
       { property: 'og:url', content: 'https://cvvd.vercel.app' },
       { name: 'twitter:card', content: 'summary_large_image' },
       {
         name: 'twitter:title',
-        content: 'cvvd - Living Profiles and Printable CV Engine',
+        content: 'Cvvd - Living Profiles and Printable CV Engine',
       },
       {
         name: 'twitter:description',

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { CvvdLogo } from '../components/CvvdIcons'
+import { CvvdLogo, GoogleIcon } from '../components/CvvdIcons'
 import { authClient } from '../lib/auth-client'
 import { ArrowRight, Loader2 } from 'lucide-react'
 
@@ -32,6 +32,26 @@ function SignUpPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [socialLoading, setSocialLoading] = useState(false)
+
+  const handleGoogleSignUp = async () => {
+    setError(null)
+    setSocialLoading(true)
+    const cleanHandle = handle.trim().toLowerCase().replace(/^@/, '')
+    if (cleanHandle && typeof window !== 'undefined') {
+      sessionStorage.setItem('cvvd_desired_handle', cleanHandle)
+    }
+
+    try {
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: cleanHandle ? `/edit?handle=${encodeURIComponent(cleanHandle)}` : '/edit',
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign up with Google')
+      setSocialLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,19 +100,44 @@ function SignUpPage() {
         <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">
           <CvvdLogo className="w-8 h-8 text-[var(--grey1)] transition-transform group-hover:scale-105" />
           <span className="font-semibold text-xl tracking-tight text-[var(--grey1)]">
-            cvvd
+            Cvvd
           </span>
         </Link>
         <h2 className="text-2xl font-medium tracking-tight text-[var(--grey1)]">
           Create your profile
         </h2>
         <p className="mt-1.5 text-xs text-[var(--grey3)]">
-          Join cvvd to build your living profile and publication-grade CV
+          Join Cvvd to build your living profile and publication-grade CV
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-[var(--inputBackgroundColor)]/50 border border-[var(--secondaryBorderColor)] py-8 px-6 sm:px-10 rounded-2xl shadow-xs">
+          <button
+            type="button"
+            onClick={handleGoogleSignUp}
+            disabled={socialLoading || loading}
+            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm font-medium text-[var(--grey1)] hover:bg-[var(--inputBackgroundColor)] disabled:opacity-50 transition-colors cursor-pointer"
+          >
+            {socialLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin text-[var(--grey2)]" />
+            ) : (
+              <GoogleIcon className="w-4 h-4 shrink-0" />
+            )}
+            <span>Continue with Google</span>
+          </button>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--secondaryBorderColor)]" />
+            </div>
+            <div className="relative flex justify-center text-[11px] font-mono uppercase tracking-wider">
+              <span className="bg-[var(--backgroundColor)] px-3 text-[var(--grey4)]">
+                or with email
+              </span>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-xs text-red-600 dark:text-red-400">

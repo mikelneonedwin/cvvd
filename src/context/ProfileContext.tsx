@@ -148,7 +148,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   const resetProfile = useCallback(() => {
     setProfile(initialProfile)
-    showToast('Reset to default cvvd template')
+    showToast('Reset to default Cvvd template')
   }, [showToast])
 
   const loadProfile = useCallback((data: UserProfile) => {

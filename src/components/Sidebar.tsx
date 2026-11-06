@@ -3,11 +3,12 @@ import { Link } from '@tanstack/react-router'
 import {
   Printer,
   Edit3,
-  Eye,
   Sun,
   Moon,
   Share2,
   Columns,
+  LogIn,
+  LogOut,
 } from 'lucide-react'
 import { CvvdLogo } from './CvvdIcons'
 import {
@@ -19,7 +20,7 @@ import {
 } from './ReadCvIcons'
 import { useProfile } from '../context/ProfileContext'
 import { useTheme } from '../context/ThemeContext'
-import { useSession } from '../lib/auth-client'
+import { useSession, signOut } from '../lib/auth-client'
 
 export function Sidebar() {
   const { data: session } = useSession()
@@ -36,6 +37,19 @@ export function Sidebar() {
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href)
     showToast('Profile link copied to clipboard')
+  }
+
+  const scrollToSection = (id: string, fallbackQuery = '.readcv-container') => {
+    const el = document.getElementById(id) || document.querySelector(fallbackQuery)
+    if (!el) return
+    const headerOffset = 56
+    const elementPosition = el.getBoundingClientRect().top
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+    window.scrollTo({
+      top: Math.max(0, offsetPosition),
+      behavior: 'smooth',
+    })
+    setIsOpenMobile(false)
   }
 
   return (
@@ -71,7 +85,7 @@ export function Sidebar() {
       >
         {/* Top: Logo & Main Navigation */}
         <div className="space-y-6">
-          {/* cvvd Logo Mark */}
+          {/* Cvvd Logo Mark */}
           <Link
             to="/"
             className="flex items-center gap-2.5 px-2 group"
@@ -80,7 +94,7 @@ export function Sidebar() {
               <CvvdLogo className="w-6 h-6" />
             </div>
             <span className="font-semibold text-[15px] tracking-tight text-[var(--grey1)]">
-              cvvd
+              Cvvd
             </span>
           </Link>
 
@@ -105,9 +119,7 @@ export function Sidebar() {
                 href="#about"
                 onClick={(e) => {
                   e.preventDefault()
-                  const el = document.getElementById('about') || document.querySelector('.readcv-container')
-                  el?.scrollIntoView({ behavior: 'smooth' })
-                  setIsOpenMobile(false)
+                  scrollToSection('about')
                 }}
                 className="flex items-center gap-3 px-2 py-1.5 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors"
               >
@@ -117,11 +129,7 @@ export function Sidebar() {
 
               <button
                 type="button"
-                onClick={() => {
-                  const el = document.getElementById('work-experience') || document.querySelector('.readcv-container')
-                  el?.scrollIntoView({ behavior: 'smooth' })
-                  setIsOpenMobile(false)
-                }}
+                onClick={() => scrollToSection('work-experience')}
                 aria-label="Scroll to experience"
                 className="w-full flex items-center gap-3 px-2 py-1.5 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors text-left cursor-pointer"
               >
@@ -135,11 +143,11 @@ export function Sidebar() {
                   e.preventDefault()
                   const el = document.getElementById('writing')
                   if (el) {
-                    el.scrollIntoView({ behavior: 'smooth' })
+                    scrollToSection('writing')
                   } else {
                     showToast('No posts or writing on this profile')
+                    setIsOpenMobile(false)
                   }
-                  setIsOpenMobile(false)
                 }}
                 className="flex items-center gap-3 px-2 py-1.5 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors"
               >
@@ -208,28 +216,10 @@ export function Sidebar() {
             <button
               type="button"
               onClick={() => {
-                setIsPreviewingPrint(true)
-                setIsOpenMobile(false)
-              }}
-              aria-label="Print or export CV as PDF (Command + P)"
-              className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800/60 transition-colors text-left cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <Printer className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
-                <span>Print CV</span>
-              </div>
-              <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
-                ⌘P
-              </kbd>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
                 setIsPreviewingPrint(!isPreviewingPrint)
                 setIsOpenMobile(false)
               }}
-              aria-label="Preview printable resume layout"
+              aria-label="Print or export CV as PDF (Command + P)"
               className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-colors text-left cursor-pointer ${
                 isPreviewingPrint
                   ? 'bg-neutral-200/90 dark:bg-neutral-800 text-neutral-950 dark:text-white font-medium shadow-2xs'
@@ -237,12 +227,19 @@ export function Sidebar() {
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Eye className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
-                <span className="font-medium">Print Preview</span>
+                <Printer className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                <span className="font-medium">Print</span>
               </div>
-              <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
-                {isPreviewingPrint ? 'Active' : 'Off'}
-              </span>
+              <div className="flex items-center gap-1.5">
+                {isPreviewingPrint && (
+                  <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
+                    Active
+                  </span>
+                )}
+                <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                  ⌘P
+                </kbd>
+              </div>
             </button>
 
             <button
@@ -274,16 +271,33 @@ export function Sidebar() {
                   </div>
                   <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono">Edit</span>
                 </Link>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await signOut()
+                    window.location.reload()
+                  }}
+                  className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg transition-colors text-left text-xs font-medium text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800/60 cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <LogOut className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                    <span>Sign out</span>
+                  </div>
+                </button>
               </>
             ) : (
               <div className="pt-2">
                 <Link
-                  to="/signup"
+                  to="/login"
                   onClick={() => setIsOpenMobile(false)}
-                  className="btn-primary w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shadow-2xs"
+                  className="btn-primary w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shadow-2xs"
                 >
-                  <span>Build your cvvd</span>
-                  <span className="text-[10px] opacity-75 font-mono">Free</span>
+                  <div className="flex items-center gap-2">
+                    <LogIn className="w-3.5 h-3.5 opacity-80" />
+                    <span>Sign in</span>
+                  </div>
+                  <span className="text-[10px] opacity-75 font-mono">Cvvd</span>
                 </Link>
               </div>
             )}

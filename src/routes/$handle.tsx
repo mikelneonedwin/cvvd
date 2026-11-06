@@ -10,18 +10,18 @@ import { Sidebar } from '../components/Sidebar'
 import { PrintPreviewModal } from '../components/PrintPreviewModal'
 import { ProfileSkeleton } from '../components/Skeleton'
 
-export const Route = createFileRoute('/profile/$handle')({
+export const Route = createFileRoute('/$handle')({
   head: ({ params }) => {
     const clean = (params.handle || 'creator').toLowerCase().replace(/^@/, '')
-    const title = `${clean} - cvvd profile`
-    const description = `View ${clean}'s living profile and printable CV on cvvd.`
+    const title = `${clean} - Cvvd profile`
+    const description = `View ${clean}'s living profile and printable CV on Cvvd.`
     return {
       meta: [
         { title },
         { name: 'description', content: description },
         { property: 'og:title', content: title },
         { property: 'og:description', content: description },
-        { property: 'og:url', content: `https://cvvd.vercel.app/profile/${clean}` },
+        { property: 'og:url', content: `https://cvvd.vercel.app/${clean}` },
         { property: 'og:type', content: 'profile' },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: title },
@@ -33,7 +33,7 @@ export const Route = createFileRoute('/profile/$handle')({
 })
 
 function ProfileHandlePage() {
-  const { handle } = useParams({ from: '/profile/$handle' })
+  const { handle } = useParams({ from: '/$handle' })
   const { data: session } = useSession()
   const { loadProfile, isPreviewingPrint, setIsPreviewingPrint } = useProfile()
   const navigate = useNavigate()
@@ -81,7 +81,7 @@ function ProfileHandlePage() {
     if (!profileData) return
 
     const { basics } = profileData
-    document.title = `${basics.name} (@${cleanHandle}) - cvvd`
+    document.title = `${basics.name} (@${cleanHandle}) - Cvvd`
 
     // Meta description
     let metaDesc = document.querySelector('meta[name="description"]')
@@ -92,12 +92,12 @@ function ProfileHandlePage() {
     }
     metaDesc.setAttribute(
       'content',
-      `${basics.headline} ${basics.location ? `in ${basics.location}` : ''}. View living profile and printable CV on cvvd.`
+      `${basics.headline} ${basics.location ? `in ${basics.location}` : ''}. View living profile and printable CV on Cvvd.`
     )
 
     // OpenGraph Title & Description & Image & URL
     let ogTitle = document.querySelector('meta[property="og:title"]')
-    if (ogTitle) ogTitle.setAttribute('content', `${basics.name} - cvvd`)
+    if (ogTitle) ogTitle.setAttribute('content', `${basics.name} - Cvvd`)
     let ogDesc = document.querySelector('meta[property="og:description"]')
     if (ogDesc)
       ogDesc.setAttribute(
@@ -105,7 +105,7 @@ function ProfileHandlePage() {
         `${basics.headline} ${basics.location ? `in ${basics.location}` : ''}`
       )
     let ogUrl = document.querySelector('meta[property="og:url"]')
-    if (ogUrl) ogUrl.setAttribute('content', `https://cvvd.vercel.app/profile/${cleanHandle}`)
+    if (ogUrl) ogUrl.setAttribute('content', `https://cvvd.vercel.app/${cleanHandle}`)
     let ogImage = document.querySelector('meta[property="og:image"]')
     if (!ogImage && basics.avatarUrl) {
       ogImage = document.createElement('meta')
@@ -116,7 +116,7 @@ function ProfileHandlePage() {
 
     // Twitter Card Tags
     let twTitle = document.querySelector('meta[name="twitter:title"]')
-    if (twTitle) twTitle.setAttribute('content', `${basics.name} (@${cleanHandle}) - cvvd`)
+    if (twTitle) twTitle.setAttribute('content', `${basics.name} (@${cleanHandle}) - Cvvd`)
     let twDesc = document.querySelector('meta[name="twitter:description"]')
     if (twDesc)
       twDesc.setAttribute(
@@ -144,7 +144,7 @@ function ProfileHandlePage() {
       jobTitle: basics.headline,
       description: basics.summary,
       image: basics.avatarUrl,
-      url: `https://cvvd.vercel.app/profile/${cleanHandle}`,
+      url: `https://cvvd.vercel.app/${cleanHandle}`,
       sameAs: basics.links.map((l) => l.url),
     })
     if (!document.getElementById('person-jsonld')) {

@@ -321,7 +321,7 @@ export function PrintPreviewModal() {
                 {preset === 'single-column' && (
                   <div className="space-y-5">
                     {/* Masthead */}
-                    <div className="border-b border-neutral-200 pb-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
                         <h1 className="text-[16px] font-medium text-black leading-tight">
                           {basics.name}
@@ -351,7 +351,7 @@ export function PrintPreviewModal() {
                     {/* Sections */}
                     {sectionVisibility.about && basics.summary && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
+                        <h2 className="text-[11px] font-medium text-black mb-1">
                           About
                         </h2>
                         <p className="text-neutral-700 text-[10px] leading-relaxed">
@@ -362,7 +362,7 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.experience && experience.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
+                        <h2 className="text-[11px] font-medium text-black mb-1">
                           Work experience
                         </h2>
                         <div className="space-y-3">
@@ -386,7 +386,7 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.projects && projects.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
+                        <h2 className="text-[11px] font-medium text-black mb-1">
                           Side projects
                         </h2>
                         <div className="space-y-2">
@@ -405,7 +405,7 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.writing && writing.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
+                        <h2 className="text-[11px] font-medium text-black mb-1">
                           Writing
                         </h2>
                         <div className="space-y-2">
@@ -424,7 +424,7 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.education && education.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
+                        <h2 className="text-[11px] font-medium text-black mb-1">
                           Education
                         </h2>
                         <div className="space-y-2">
@@ -443,7 +443,7 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.skills && skillCategories.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black border-b border-neutral-200 pb-1 mb-2">
+                        <h2 className="text-[11px] font-medium text-black mb-1">
                           Skills
                         </h2>
                         <div className="space-y-1 text-[10px]">
@@ -491,7 +491,7 @@ export function PrintPreviewModal() {
                       </div>
 
                       {sectionVisibility.education && education.length > 0 && (
-                        <div className="pt-2 border-t border-neutral-200">
+                        <div className="pt-2">
                           <h2 className="text-[10px] font-medium text-black mb-1">
                             Education
                           </h2>
@@ -508,7 +508,7 @@ export function PrintPreviewModal() {
                       )}
 
                       {sectionVisibility.skills && skillCategories.length > 0 && (
-                        <div className="pt-2 border-t border-neutral-200">
+                        <div className="pt-2">
                           <h2 className="text-[10px] font-medium text-black mb-1">
                             Skills
                           </h2>

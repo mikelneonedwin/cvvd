@@ -91,7 +91,7 @@ export function ProfileHero() {
 
   if (isSingleCol) {
     return (
-      <div className="readcv-header flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-6 border-b border-[var(--primaryBorderColor)] w-full">
+      <div className="readcv-header flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 w-full">
         <div className="flex items-center gap-4">
           {basics.avatarUrl && (
             <div className="readcv-photo-wrap shrink-0">
