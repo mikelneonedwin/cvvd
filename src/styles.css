@@ -140,10 +140,10 @@ a {
 }
 
 .readcv-duration {
-  width: 100px;
-  min-width: 100px;
+  width: 140px;
+  min-width: 140px;
   text-align: right;
-  margin-right: 36px;
+  margin-right: 28px;
   color: var(--grey3);
   font-size: var(--type-size);
   white-space: nowrap;
@@ -153,10 +153,10 @@ a {
 }
 
 .readcv-duration-wrap {
-  width: 100px;
-  min-width: 100px;
+  width: 140px;
+  min-width: 140px;
   text-align: right;
-  margin-right: 36px;
+  margin-right: 28px;
   color: var(--grey3);
   font-size: var(--type-size);
   white-space: normal;
@@ -206,7 +206,7 @@ a {
 }
 
 .readcv-about-content {
-  margin-left: 136px;
+  margin-left: 168px;
   color: var(--grey2);
   font-size: var(--type-size);
   line-height: 1.6;

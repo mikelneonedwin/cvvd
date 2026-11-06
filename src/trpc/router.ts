@@ -109,7 +109,7 @@ export const appRouter = router({
         return { profile, rawHandle: existing.handle }
       }
 
-      // Generate a new initial profile for first-time logged in user
+      // Generate a clean initial profile for first-time logged in user without demo content
       const baseHandle = sanitizeHandle(ctx.user.name || ctx.user.email.split('@')[0]) || 'user'
       const candidateHandle = `${baseHandle}-${ctx.user.id.slice(0, 4)}`
 
@@ -119,29 +119,34 @@ export const appRouter = router({
           id: `prof_${ctx.user.id}`,
           userId: ctx.user.id,
           handle: candidateHandle,
-          name: ctx.user.name || 'Your Name',
-          headline: 'Product Designer and Engineer',
-          avatarUrl: ctx.user.image || initialProfile.basics.avatarUrl,
+          name: ctx.user.name || '',
+          headline: '',
+          avatarUrl: ctx.user.image || '',
           statusState: 'available',
           statusLabel: 'Available for work',
-          location: 'San Francisco, CA',
-          timezone: 'America/Los_Angeles',
-          summary: 'Building high quality software and interfaces with speed and typographic precision.',
-          links: [
-            {
-              id: 'link-1',
-              platform: 'website',
-              label: 'myportfolio.com',
-              url: 'https://example.com',
-            },
-          ],
-          experience: initialProfile.experience,
-          projects: initialProfile.projects,
-          writing: initialProfile.writing,
-          education: initialProfile.education,
-          skillCategories: initialProfile.skillCategories,
-          sectionVisibility: initialProfile.sectionVisibility,
-          printSettings: initialProfile.printSettings,
+          location: '',
+          timezone: '',
+          summary: '',
+          links: [],
+          experience: [],
+          projects: [],
+          writing: [],
+          education: [],
+          skillCategories: [],
+          sectionVisibility: {
+            about: true,
+            experience: true,
+            projects: true,
+            writing: true,
+            education: true,
+            skills: true,
+          },
+          printSettings: {
+            density: 'comfortable',
+            showAvatarInPrint: true,
+            includeLinksInPrint: true,
+            layoutPreset: 'editorial',
+          },
         })
         .returning()
 
@@ -149,8 +154,8 @@ export const appRouter = router({
         basics: {
           name: newProfile.name,
           handle: `cvvd/${newProfile.handle}`,
-          headline: newProfile.headline,
-          avatarUrl: newProfile.avatarUrl || initialProfile.basics.avatarUrl,
+          headline: newProfile.headline || '',
+          avatarUrl: newProfile.avatarUrl || '',
           status: {
             state: newProfile.statusState,
             label: newProfile.statusLabel || '',
@@ -165,8 +170,20 @@ export const appRouter = router({
         writing: newProfile.writing || [],
         education: newProfile.education || [],
         skillCategories: newProfile.skillCategories || [],
-        sectionVisibility: newProfile.sectionVisibility || initialProfile.sectionVisibility,
-        printSettings: newProfile.printSettings || initialProfile.printSettings,
+        sectionVisibility: newProfile.sectionVisibility || {
+          about: true,
+          experience: true,
+          projects: true,
+          writing: true,
+          education: true,
+          skills: true,
+        },
+        printSettings: newProfile.printSettings || {
+          density: 'comfortable',
+          showAvatarInPrint: true,
+          includeLinksInPrint: true,
+          layoutPreset: 'editorial',
+        },
       }
 
       return { profile, rawHandle: newProfile.handle }

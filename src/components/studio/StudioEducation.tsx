@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react'
 import type { UserProfile, EducationItem } from '../../types/profile'
+import { MonthYearPicker } from '../MonthYearPicker'
 
 interface StudioEducationProps {
   form: UserProfile
@@ -10,11 +11,11 @@ export function StudioEducation({ form, setForm }: StudioEducationProps) {
   const addEducation = () => {
     const newItem: EducationItem = {
       id: `edu-${Date.now()}`,
-      institution: 'University / Institute',
-      degree: 'B.S. in Computer Science',
+      institution: '',
+      degree: '',
       field: '',
-      startYear: '2016',
-      endYear: '2020',
+      startYear: '',
+      endYear: '',
       honors: '',
     }
     setForm({
@@ -38,7 +39,7 @@ export function StudioEducation({ form, setForm }: StudioEducationProps) {
             Education and degrees
           </h2>
           <p className="text-xs text-[var(--grey3)] mt-0.5">
-            Academic qualifications, bootcamps, and credentials.
+            Academic qualifications, credentials, programs, and certifications.
           </p>
         </div>
         <button
@@ -78,7 +79,7 @@ export function StudioEducation({ form, setForm }: StudioEducationProps) {
                     updated[idx].institution = e.target.value
                     setForm({ ...form, education: updated })
                   }}
-                  placeholder="Institution"
+                  placeholder="Institution / University"
                   className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm text-[var(--grey1)]"
                 />
               </div>
@@ -102,7 +103,7 @@ export function StudioEducation({ form, setForm }: StudioEducationProps) {
                   updated[idx].field = e.target.value
                   setForm({ ...form, education: updated })
                 }}
-                placeholder="Field of study (e.g. Graphic Design, CS)"
+                placeholder="Field of study (e.g. Design, Economics, Literature)"
                 className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
               />
               <input
@@ -118,28 +119,24 @@ export function StudioEducation({ form, setForm }: StudioEducationProps) {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="text"
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <MonthYearPicker
+                label="Start Date / Year"
                 value={edu.startYear}
-                onChange={(e) => {
+                onChange={(newVal) => {
                   const updated = [...form.education]
-                  updated[idx].startYear = e.target.value
+                  updated[idx].startYear = newVal
                   setForm({ ...form, education: updated })
                 }}
-                placeholder="Start year"
-                className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
               />
-              <input
-                type="text"
+              <MonthYearPicker
+                label="End Date / Year"
                 value={edu.endYear}
-                onChange={(e) => {
+                onChange={(newVal) => {
                   const updated = [...form.education]
-                  updated[idx].endYear = e.target.value
+                  updated[idx].endYear = newVal
                   setForm({ ...form, education: updated })
                 }}
-                placeholder="End year"
-                className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
               />
             </div>
           </div>

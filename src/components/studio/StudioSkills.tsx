@@ -70,7 +70,7 @@ function SkillCategoryRow({
           value={rawSkills}
           onChange={handleSkillsChange}
           onBlur={handleSkillsBlur}
-          placeholder="Figma, TypeScript, React, Tailwind CSS"
+          placeholder="e.g. Design Systems, Typography, Communication, Strategic Planning"
           className="w-full px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
         />
       </div>
@@ -83,12 +83,12 @@ export function StudioSkills({ form, setForm }: StudioSkillsProps) {
     setForm({
       ...form,
       skillCategories: [
-        ...form.skillCategories,
         {
           id: `cat-${Date.now()}`,
-          name: 'Category Name',
-          skills: ['Skill 1', 'Skill 2'],
+          name: '',
+          skills: [],
         },
+        ...form.skillCategories,
       ],
     })
   }

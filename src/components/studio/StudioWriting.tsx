@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react'
 import type { UserProfile, WritingItem } from '../../types/profile'
+import { MonthYearPicker } from '../MonthYearPicker'
 
 interface StudioWritingProps {
   form: UserProfile
@@ -10,9 +11,9 @@ export function StudioWriting({ form, setForm }: StudioWritingProps) {
   const addWriting = () => {
     const newItem: WritingItem = {
       id: `write-${Date.now()}`,
-      title: 'New Article',
-      publication: 'Medium / Substack',
-      year: new Date().getFullYear().toString(),
+      title: '',
+      publication: '',
+      year: '',
       url: '',
       description: '',
     }
@@ -37,7 +38,7 @@ export function StudioWriting({ form, setForm }: StudioWritingProps) {
             Writing and publications
           </h2>
           <p className="text-xs text-[var(--grey3)] mt-0.5">
-            Articles, design essays, documentation, or technical papers.
+            Articles, essays, documentation, books, or technical papers.
           </p>
         </div>
         <button
@@ -57,7 +58,7 @@ export function StudioWriting({ form, setForm }: StudioWritingProps) {
             className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/30 space-y-3"
           >
             <div className="flex justify-between items-start gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px_100px] gap-3 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                 <input
                   type="text"
                   value={item.title}
@@ -66,7 +67,7 @@ export function StudioWriting({ form, setForm }: StudioWritingProps) {
                     updated[idx].title = e.target.value
                     setForm({ ...form, writing: updated })
                   }}
-                  placeholder="Article title"
+                  placeholder="Article or publication title"
                   className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm font-medium text-[var(--grey1)]"
                 />
                 <input
@@ -77,19 +78,8 @@ export function StudioWriting({ form, setForm }: StudioWritingProps) {
                     updated[idx].publication = e.target.value
                     setForm({ ...form, writing: updated })
                   }}
-                  placeholder="Publication"
-                  className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
-                />
-                <input
-                  type="text"
-                  value={item.year}
-                  onChange={(e) => {
-                    const updated = [...form.writing]
-                    updated[idx].year = e.target.value
-                    setForm({ ...form, writing: updated })
-                  }}
-                  placeholder="Year"
-                  className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
+                  placeholder="Publisher / Outlet / Medium / Substack"
+                  className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
                 />
               </div>
 
@@ -103,17 +93,34 @@ export function StudioWriting({ form, setForm }: StudioWritingProps) {
               </button>
             </div>
 
-            <input
-              type="url"
-              value={item.url}
-              onChange={(e) => {
-                const updated = [...form.writing]
-                updated[idx].url = e.target.value
-                setForm({ ...form, writing: updated })
-              }}
-              placeholder="https://... (URL optional)"
-              className="w-full px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-3 items-end">
+              <MonthYearPicker
+                label="Date / Year"
+                value={item.year}
+                onChange={(newVal) => {
+                  const updated = [...form.writing]
+                  updated[idx].year = newVal
+                  setForm({ ...form, writing: updated })
+                }}
+              />
+
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-mono text-[var(--grey3)] uppercase tracking-wider">
+                  Link
+                </span>
+                <input
+                  type="url"
+                  value={item.url}
+                  onChange={(e) => {
+                    const updated = [...form.writing]
+                    updated[idx].url = e.target.value
+                    setForm({ ...form, writing: updated })
+                  }}
+                  placeholder="https://... (URL optional)"
+                  className="w-full px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
+                />
+              </div>
+            </div>
 
             <textarea
               rows={2}
