@@ -42,6 +42,17 @@ function ProfileHandlePage() {
   // Clean handle parameter
   const cleanHandle = (handle || 'elena').toLowerCase().replace(/^@/, '')
 
+  // Fetch logged-in user profile to verify ownership of current profile
+  const { data: myProfileData } = useQuery({
+    ...trpc.profile.getMine.queryOptions(),
+    enabled: !!session?.user,
+  })
+  const isOwner = Boolean(
+    session?.user &&
+      myProfileData?.rawHandle &&
+      myProfileData.rawHandle.toLowerCase() === cleanHandle
+  )
+
   // Client-side query fetching per user preference
   const {
     data: profileData,
@@ -199,8 +210,8 @@ function ProfileHandlePage() {
       {/* Persistent Sidebar with cvvd Platform navigation & CV Controls */}
       <Sidebar />
 
-      {/* Floating Owner Quick Edit Pill */}
-      {session?.user && (
+      {/* Floating Owner Quick Edit Pill - only visible on viewing user's own profile */}
+      {isOwner && (
         <div className="no-print fixed bottom-6 right-6 z-50">
           <Link
             to="/edit"

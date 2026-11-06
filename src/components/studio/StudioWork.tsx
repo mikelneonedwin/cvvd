@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react'
 import type { UserProfile, WorkExperience } from '../../types/profile'
+import { MonthYearPicker } from '../MonthYearPicker'
 
 interface StudioWorkProps {
   form: UserProfile
@@ -10,12 +11,12 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
   const addExperience = () => {
     const newItem: WorkExperience = {
       id: `exp-${Date.now()}`,
-      company: 'Company',
-      role: 'Role Title',
-      startDate: '2024',
-      endDate: 'Now',
-      isCurrent: true,
-      location: 'Remote',
+      company: '',
+      role: '',
+      startDate: '',
+      endDate: '',
+      isCurrent: false,
+      location: '',
       employmentType: 'Full-time',
       summary: '',
       highlights: [],
@@ -43,7 +44,7 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
             Work experience
           </h2>
           <p className="text-xs text-[var(--grey3)] mt-0.5">
-            Record your employment history, roles, milestones, and technologies.
+            Record your employment history, roles, milestones, and tools.
           </p>
         </div>
         <button
@@ -83,7 +84,7 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
                     updated[idx].company = e.target.value
                     setForm({ ...form, experience: updated })
                   }}
-                  placeholder="Company"
+                  placeholder="Company / Organization"
                   className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm text-[var(--grey1)]"
                 />
               </div>
@@ -121,63 +122,65 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
                     .filter(Boolean)
                   setForm({ ...form, experience: updated })
                 }}
-                placeholder="Technologies (e.g. React, TypeScript, Figma)"
+                placeholder="Key skills / tools / technologies"
                 className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
               />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <input
-                type="text"
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end text-xs">
+              <MonthYearPicker
+                label="Start Date"
                 value={item.startDate}
-                onChange={(e) => {
+                onChange={(newVal) => {
                   const updated = [...form.experience]
-                  updated[idx].startDate = e.target.value
+                  updated[idx].startDate = newVal
                   setForm({ ...form, experience: updated })
                 }}
-                placeholder="Start date (e.g. 2021)"
-                className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] font-mono text-[var(--grey1)]"
               />
 
-              <input
-                type="text"
+              <MonthYearPicker
+                label="End Date"
+                value={item.isCurrent ? '' : item.endDate}
                 disabled={item.isCurrent}
-                value={item.isCurrent ? 'Now' : item.endDate}
-                onChange={(e) => {
+                onChange={(newVal) => {
                   const updated = [...form.experience]
-                  updated[idx].endDate = e.target.value
+                  updated[idx].endDate = newVal
                   setForm({ ...form, experience: updated })
                 }}
-                placeholder="End date (e.g. 2024)"
-                className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] font-mono text-[var(--grey1)] disabled:opacity-50"
               />
 
-              <input
-                type="text"
-                value={item.location}
-                onChange={(e) => {
-                  const updated = [...form.experience]
-                  updated[idx].location = e.target.value
-                  setForm({ ...form, experience: updated })
-                }}
-                placeholder="Location"
-                className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-[var(--grey1)]"
-              />
-
-              <label className="flex items-center gap-2 cursor-pointer select-none text-[var(--grey2)] px-2 min-h-[44px]">
-                <input
-                  type="checkbox"
-                  checked={item.isCurrent}
-                  onChange={(e) => {
-                    const updated = [...form.experience]
-                    updated[idx].isCurrent = e.target.checked
-                    if (e.target.checked) updated[idx].endDate = 'Now'
-                    setForm({ ...form, experience: updated })
-                  }}
-                  className="rounded border-[var(--secondaryBorderColor)] text-[var(--grey1)] w-4 h-4"
-                />
-                <span>Current role</span>
-              </label>
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-mono text-[var(--grey3)] uppercase tracking-wider">
+                  Location & Status
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={item.location}
+                    onChange={(e) => {
+                      const updated = [...form.experience]
+                      updated[idx].location = e.target.value
+                      setForm({ ...form, experience: updated })
+                    }}
+                    placeholder="Location"
+                    className="flex-1 px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-[var(--grey1)]"
+                  />
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none text-[var(--grey2)] px-2 min-h-[44px] shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={item.isCurrent}
+                      onChange={(e) => {
+                        const updated = [...form.experience]
+                        updated[idx].isCurrent = e.target.checked
+                        if (e.target.checked) updated[idx].endDate = 'Now'
+                        setForm({ ...form, experience: updated })
+                      }}
+                      className="rounded border-[var(--secondaryBorderColor)] text-[var(--grey1)] w-4 h-4"
+                    />
+                    <span>Current</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -212,7 +215,7 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
                     .filter(Boolean)
                   setForm({ ...form, experience: updated })
                 }}
-                placeholder="Architected the design system foundation...&#10;Reduced navigation latency by 34%...&#10;Partnered with engineering on shared primitives..."
+                placeholder="Led strategic initiatives...&#10;Streamlined operational workflows by 34%...&#10;Collaborated across multi-disciplinary teams..."
                 className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)] leading-relaxed font-sans"
               />
             </div>

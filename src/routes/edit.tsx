@@ -15,10 +15,11 @@ import {
   LogOut,
 } from 'lucide-react'
 import { CvvdLogo } from '../components/CvvdIcons'
-import { trpc, trpcClient } from '../trpc/client'
+import { trpc, trpcClient, queryClient } from '../trpc/client'
 import { useSession, signOut } from '../lib/auth-client'
 import { useProfile } from '../context/ProfileContext'
 import { Skeleton } from '../components/Skeleton'
+import { Sidebar } from '../components/Sidebar'
 import type { UserProfile } from '../types/profile'
 import { StudioBasics } from '../components/studio/StudioBasics'
 import { StudioWork } from '../components/studio/StudioWork'
@@ -28,7 +29,16 @@ import { StudioEducation } from '../components/studio/StudioEducation'
 import { StudioSkills } from '../components/studio/StudioSkills'
 import { StudioLayout } from '../components/studio/StudioLayout'
 
+interface EditSearch {
+  handle?: string
+}
+
 export const Route = createFileRoute('/edit')({
+  validateSearch: (search: Record<string, unknown>): EditSearch => {
+    return {
+      handle: typeof search.handle === 'string' ? search.handle : undefined,
+    }
+  },
   component: ProfileEditorPage,
 })
 
@@ -59,8 +69,9 @@ const STUDIO_TABS: readonly TabDefinition[] = [
 
 export function ProfileEditorPage() {
   const navigate = useNavigate()
+  const search = Route.useSearch()
   const { data: session, isPending: isSessionLoading } = useSession()
-  const { showToast } = useProfile()
+  const { showToast, loadProfile } = useProfile()
   const [activeTab, setActiveTab] = useState<StudioTab>('basics')
   const [isSaving, setIsSaving] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -88,9 +99,9 @@ export function ProfileEditorPage() {
 
   useEffect(() => {
     if (profileData?.profile) {
-      // Check if user just signed up with a desired handle
-      let pendingHandle = ''
-      if (typeof window !== 'undefined') {
+      // Check if user specified a handle in search or sessionStorage
+      let pendingHandle = search?.handle || ''
+      if (!pendingHandle && typeof window !== 'undefined') {
         pendingHandle = sessionStorage.getItem('cvvd_desired_handle') || ''
         if (pendingHandle) {
           sessionStorage.removeItem('cvvd_desired_handle')
@@ -98,20 +109,23 @@ export function ProfileEditorPage() {
       }
 
       if (pendingHandle && pendingHandle !== profileData.rawHandle) {
-        setForm({
+        const initialForm = {
           ...profileData.profile,
           basics: {
             ...profileData.profile.basics,
             handle: `cvvd/${pendingHandle}`,
           },
-        })
+        }
+        setForm(initialForm)
         setRawHandle(pendingHandle)
+        loadProfile(initialForm)
       } else {
         setForm(profileData.profile)
         setRawHandle(profileData.rawHandle || '')
+        loadProfile(profileData.profile)
       }
     }
-  }, [profileData])
+  }, [profileData, search?.handle, loadProfile])
 
   const handleAvatarUpload = (file: File) => {
     if (file.size > 2 * 1024 * 1024) {
@@ -130,17 +144,18 @@ export function ProfileEditorPage() {
             mimeType: file.type || 'image/png',
             base64Data,
           })
-          setForm((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  basics: {
-                    ...prev.basics,
-                    avatarUrl: res.avatarUrl,
-                  },
-                }
-              : null
-          )
+          setForm((prev) => {
+            if (!prev) return null
+            const updated = {
+              ...prev,
+              basics: {
+                ...prev.basics,
+                avatarUrl: res.avatarUrl,
+              },
+            }
+            loadProfile(updated)
+            return updated
+          })
           showToast('Avatar saved to database')
         } catch {
           showToast('Failed to upload avatar blob')
@@ -155,11 +170,42 @@ export function ProfileEditorPage() {
   const handleSave = async () => {
     if (!form) return
     setIsSaving(true)
+
+    // Save current cache snapshot to rollback in case of error
+    const previousMine = queryClient.getQueryData(trpc.profile.getMine.queryKey())
+    const currentCleanHandle = rawHandle || form.basics.handle.replace(/^cvvd\//, '')
+    const previousByHandle = queryClient.getQueryData(
+      trpc.profile.getByHandle.queryKey({ handle: currentCleanHandle })
+    )
+
+    // Optimistically update React Query cache and ProfileContext immediately
+    queryClient.setQueryData(trpc.profile.getMine.queryKey(), {
+      profile: form,
+      rawHandle: currentCleanHandle,
+    })
+    queryClient.setQueryData(
+      trpc.profile.getByHandle.queryKey({ handle: currentCleanHandle }),
+      form
+    )
+    loadProfile(form)
+
     try {
-      await trpcClient.profile.updateMine.mutate(form)
+      const res = await trpcClient.profile.updateMine.mutate(form)
       showToast('Changes saved')
+      if (res.handle && res.handle !== rawHandle) {
+        setRawHandle(res.handle)
+      }
       refetch()
     } catch (err) {
+      // Rollback optimistic updates on failure
+      queryClient.setQueryData(trpc.profile.getMine.queryKey(), previousMine)
+      queryClient.setQueryData(
+        trpc.profile.getByHandle.queryKey({ handle: currentCleanHandle }),
+        previousByHandle
+      )
+      if (previousMine && typeof previousMine === 'object' && 'profile' in previousMine) {
+        loadProfile((previousMine as { profile: UserProfile }).profile)
+      }
       showToast(err instanceof Error ? err.message : 'Error saving changes')
     } finally {
       setIsSaving(false)
@@ -192,13 +238,7 @@ export function ProfileEditorPage() {
               to="/login"
               className="btn-primary inline-flex items-center justify-center min-h-[44px] px-5 rounded-xl text-xs font-medium shadow-2xs active:scale-98 transition-transform"
             >
-              Sign in
-            </Link>
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center min-h-[44px] px-5 rounded-xl text-xs font-medium border border-[var(--secondaryBorderColor)] text-[var(--grey1)] hover:bg-[var(--grey5)] active:scale-98 transition-transform"
-            >
-              Create account
+              Sign in with Google
             </Link>
           </div>
         </div>
@@ -208,129 +248,185 @@ export function ProfileEditorPage() {
 
   if (!form) return null
 
+  // Has existing data if user already has an experience, project, education, or non-empty bio
+  const hasExistingData = Boolean(
+    form.experience.length > 0 ||
+      form.projects.length > 0 ||
+      form.writing.length > 0 ||
+      form.education.length > 0 ||
+      form.basics.summary.trim().length > 0
+  )
+
+  const showSidebar = hasExistingData
+
   return (
     <div className="min-h-screen bg-[var(--backgroundColor)] text-[var(--grey1)] selection:bg-[var(--grey2)] selection:text-[var(--backgroundColor)]">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 border-b border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)]/95 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="text-[var(--grey1)]">
-              <CvvdLogo className="w-6 h-6" />
-            </Link>
-            <div className="h-4 w-px bg-[var(--secondaryBorderColor)] hidden sm:block" />
-            <span className="text-xs font-mono text-[var(--grey3)] hidden sm:inline">
-              Profile Studio
-            </span>
-            <span className="text-xs font-mono text-[var(--grey2)] truncate max-w-[140px] sm:max-w-none">
-              cvvd/{rawHandle || 'you'}
-            </span>
+      {/* Persistent Sidebar rendered when user already has existing profile data */}
+      {showSidebar && <Sidebar />}
+
+      <div className={showSidebar ? 'lg:pl-[240px]' : ''}>
+        {/* Top Navigation Bar */}
+        <header className="sticky top-0 z-40 border-b border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)]/95 backdrop-blur-md">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Link to="/" className="text-[var(--grey1)]">
+                <CvvdLogo className="w-6 h-6" />
+              </Link>
+              <div className="h-4 w-px bg-[var(--secondaryBorderColor)] hidden sm:block" />
+              <span className="text-xs font-mono text-[var(--grey3)] hidden sm:inline">
+                Profile Studio
+              </span>
+              <span className="text-xs font-mono text-[var(--grey2)] truncate max-w-[140px] sm:max-w-none">
+                cvvd/{rawHandle || 'you'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                to="/$handle"
+                params={{ handle: rawHandle || 'elena' }}
+                replace={true}
+                className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3.5 rounded-xl text-xs font-medium text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] border border-[var(--secondaryBorderColor)] transition-colors active:scale-98"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">View live profile</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="btn-primary inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 rounded-xl text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer shadow-2xs active:scale-98"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5" />
+                )}
+                <span>{isSaving ? 'Saving...' : 'Save changes'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut()
+                  window.location.href = '/'
+                }}
+                aria-label="Sign out"
+                title="Sign out"
+                className="inline-flex items-center justify-center min-h-[44px] px-3 rounded-xl text-xs font-medium text-[var(--grey3)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] border border-[var(--secondaryBorderColor)] transition-colors active:scale-98 cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              to="/$handle"
-              params={{ handle: rawHandle || 'elena' }}
-              className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3.5 rounded-xl text-xs font-medium text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] border border-[var(--secondaryBorderColor)] transition-colors active:scale-98"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">View live profile</span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="btn-primary inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 rounded-xl text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer shadow-2xs active:scale-98"
-            >
-              {isSaving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-              <span>{isSaving ? 'Saving...' : 'Save changes'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={async () => {
-                await signOut()
-                window.location.href = '/'
-              }}
-              aria-label="Sign out"
-              title="Sign out"
-              className="inline-flex items-center justify-center min-h-[44px] px-3 rounded-xl text-xs font-medium text-[var(--grey3)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] border border-[var(--secondaryBorderColor)] transition-colors active:scale-98 cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
+          {/* Tab Navigation (Responsive Scrollable on Mobile) */}
+          <div
+            role="tablist"
+            aria-label="Profile Studio Sections"
+            className="max-w-5xl mx-auto px-4 sm:px-6 flex overflow-x-auto no-scrollbar border-t border-[var(--secondaryBorderColor)]"
+          >
+            {STUDIO_TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={activeTab === id}
+                type="button"
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-2 px-4 py-3 min-h-[44px] text-xs font-medium whitespace-nowrap border-b-2 transition-colors shrink-0 ${
+                  activeTab === id
+                    ? 'border-[var(--grey1)] text-[var(--grey1)]'
+                    : 'border-transparent text-[var(--grey3)] hover:text-[var(--grey2)]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{label}</span>
+              </button>
+            ))}
           </div>
-        </div>
+        </header>
 
-        {/* Tab Navigation (Responsive Scrollable on Mobile) */}
-        <div
-          role="tablist"
-          aria-label="Profile Studio Sections"
-          className="max-w-5xl mx-auto px-4 sm:px-6 flex overflow-x-auto no-scrollbar border-t border-[var(--secondaryBorderColor)]"
+        {/* Main Studio Body */}
+        <main
+          role="tabpanel"
+          aria-label={STUDIO_TABS.find((t) => t.id === activeTab)?.label}
+          className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12"
         >
-          {STUDIO_TABS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              role="tab"
-              aria-selected={activeTab === id}
-              type="button"
-              onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-3 min-h-[44px] text-xs font-medium whitespace-nowrap border-b-2 transition-colors shrink-0 ${
-                activeTab === id
-                  ? 'border-[var(--grey1)] text-[var(--grey1)]'
-                  : 'border-transparent text-[var(--grey3)] hover:text-[var(--grey2)]'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-      </header>
+          {activeTab === 'basics' && (
+            <StudioBasics
+              form={form}
+              setForm={(newForm) => {
+                setForm(newForm)
+                loadProfile(newForm)
+              }}
+              setRawHandle={setRawHandle}
+              uploadingAvatar={uploadingAvatar}
+              onAvatarUpload={handleAvatarUpload}
+            />
+          )}
 
-      {/* Main Studio Body */}
-      <main
-        role="tabpanel"
-        aria-label={STUDIO_TABS.find((t) => t.id === activeTab)?.label}
-        className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12"
-      >
-        {activeTab === 'basics' && (
-          <StudioBasics
-            form={form}
-            setForm={setForm}
-            setRawHandle={setRawHandle}
-            uploadingAvatar={uploadingAvatar}
-            onAvatarUpload={handleAvatarUpload}
-          />
-        )}
+          {activeTab === 'experience' && (
+            <StudioWork
+              form={form}
+              setForm={(newForm) => {
+                setForm(newForm)
+                loadProfile(newForm)
+              }}
+            />
+          )}
 
-        {activeTab === 'experience' && (
-          <StudioWork form={form} setForm={setForm} />
-        )}
+          {activeTab === 'projects' && (
+            <StudioProjects
+              form={form}
+              setForm={(newForm) => {
+                setForm(newForm)
+                loadProfile(newForm)
+              }}
+            />
+          )}
 
-        {activeTab === 'projects' && (
-          <StudioProjects form={form} setForm={setForm} />
-        )}
+          {activeTab === 'writing' && (
+            <StudioWriting
+              form={form}
+              setForm={(newForm) => {
+                setForm(newForm)
+                loadProfile(newForm)
+              }}
+            />
+          )}
 
-        {activeTab === 'writing' && (
-          <StudioWriting form={form} setForm={setForm} />
-        )}
+          {activeTab === 'education' && (
+            <StudioEducation
+              form={form}
+              setForm={(newForm) => {
+                setForm(newForm)
+                loadProfile(newForm)
+              }}
+            />
+          )}
 
-        {activeTab === 'education' && (
-          <StudioEducation form={form} setForm={setForm} />
-        )}
+          {activeTab === 'skills' && (
+            <StudioSkills
+              form={form}
+              setForm={(newForm) => {
+                setForm(newForm)
+                loadProfile(newForm)
+              }}
+            />
+          )}
 
-        {activeTab === 'skills' && (
-          <StudioSkills form={form} setForm={setForm} />
-        )}
-
-        {activeTab === 'layout' && (
-          <StudioLayout form={form} setForm={setForm} />
-        )}
-      </main>
+          {activeTab === 'layout' && (
+            <StudioLayout
+              form={form}
+              setForm={(newForm) => {
+                setForm(newForm)
+                loadProfile(newForm)
+              }}
+            />
+          )}
+        </main>
+      </div>
     </div>
   )
 }

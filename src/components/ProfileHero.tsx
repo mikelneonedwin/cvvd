@@ -2,16 +2,11 @@ import { useProfile } from '../context/ProfileContext'
 import { SupporterHeartIcon, ArrowExternalIcon } from './ReadCvIcons'
 
 export function ProfileHero() {
-  const { profile, showToast } = useProfile()
+  const { profile } = useProfile()
   const { basics, printSettings } = profile
   const preset = printSettings.layoutPreset || 'editorial'
   const isBalanced = preset === 'balanced'
   const isSingleCol = preset === 'single-column'
-
-  const copyEmail = (email: string) => {
-    navigator.clipboard.writeText(email)
-    showToast('Copied email to clipboard')
-  }
 
   if (isBalanced) {
     return (
@@ -55,31 +50,21 @@ export function ProfileHero() {
 
             {basics.links.map((link) => {
               const isEmail = link.platform === 'email'
-              const emailAddress = link.url.replace(/^mailto:/, '')
-              if (isEmail) {
-                return (
-                  <button
-                    key={link.id}
-                    type="button"
-                    onClick={() => copyEmail(emailAddress)}
-                    aria-label={`Copy email: ${emailAddress}`}
-                    className="readcv-badge text-[12px] py-1 px-2.5 max-w-full hover:border-[var(--grey3)] transition-colors group cursor-pointer text-left"
-                  >
-                    <span className="truncate">{link.label}</span>
-                  </button>
-                )
-              }
+              const href = isEmail
+                ? (link.url.startsWith('mailto:') ? link.url : `mailto:${link.url}`)
+                : link.url
               return (
                 <a
                   key={link.id}
-                  href={link.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`Open link: ${link.label}`}
+                  href={href}
+                  {...(!isEmail ? { target: '_blank', rel: 'noreferrer' } : {})}
+                  aria-label={isEmail ? `Send email to ${link.label}` : `Open link: ${link.label}`}
                   className="readcv-badge text-[12px] py-1 px-2.5 max-w-full hover:border-[var(--grey3)] transition-colors group text-left"
                 >
                   <span className="truncate">{link.label}</span>
-                  <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors shrink-0" />
+                  {!isEmail && (
+                    <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors shrink-0" />
+                  )}
                 </a>
               )
             })}
@@ -134,31 +119,21 @@ export function ProfileHero() {
 
           {basics.links.map((link) => {
             const isEmail = link.platform === 'email'
-            const emailAddress = link.url.replace(/^mailto:/, '')
-            if (isEmail) {
-              return (
-                <button
-                  key={link.id}
-                  type="button"
-                  onClick={() => copyEmail(emailAddress)}
-                  aria-label={`Copy email: ${emailAddress}`}
-                  className="readcv-badge text-[12px] hover:border-[var(--grey3)] transition-colors group cursor-pointer"
-                >
-                  <span>{link.label}</span>
-                </button>
-              )
-            }
+            const href = isEmail
+              ? (link.url.startsWith('mailto:') ? link.url : `mailto:${link.url}`)
+              : link.url
             return (
               <a
                 key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`Open link: ${link.label}`}
+                href={href}
+                {...(!isEmail ? { target: '_blank', rel: 'noreferrer' } : {})}
+                aria-label={isEmail ? `Send email to ${link.label}` : `Open link: ${link.label}`}
                 className="readcv-badge text-[12px] hover:border-[var(--grey3)] transition-colors group"
               >
                 <span>{link.label}</span>
-                <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors" />
+                {!isEmail && (
+                  <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors" />
+                )}
               </a>
             )
           })}
@@ -209,31 +184,21 @@ export function ProfileHero() {
 
           {basics.links.map((link) => {
             const isEmail = link.platform === 'email'
-            const emailAddress = link.url.replace(/^mailto:/, '')
-            if (isEmail) {
-              return (
-                <button
-                  key={link.id}
-                  type="button"
-                  onClick={() => copyEmail(emailAddress)}
-                  aria-label={`Copy email: ${emailAddress}`}
-                  className="readcv-badge hover:border-[var(--grey3)] transition-colors group cursor-pointer"
-                >
-                  <span>{link.label}</span>
-                </button>
-              )
-            }
+            const href = isEmail
+              ? (link.url.startsWith('mailto:') ? link.url : `mailto:${link.url}`)
+              : link.url
             return (
               <a
                 key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`Open link: ${link.label}`}
+                href={href}
+                {...(!isEmail ? { target: '_blank', rel: 'noreferrer' } : {})}
+                aria-label={isEmail ? `Send email to ${link.label}` : `Open link: ${link.label}`}
                 className="readcv-badge hover:border-[var(--grey3)] transition-colors group"
               >
                 <span>{link.label}</span>
-                <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors" />
+                {!isEmail && (
+                  <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors" />
+                )}
               </a>
             )
           })}

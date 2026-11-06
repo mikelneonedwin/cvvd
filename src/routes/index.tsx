@@ -117,7 +117,7 @@ export function HomePage() {
         {/* Inline Handle Claim Widget */}
         <form
           onSubmit={handleClaimSubmit}
-          className="mt-8 max-w-md mx-auto flex items-center rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/60 p-1.5 shadow-xs focus-within:ring-1 focus-within:ring-[var(--grey1)] transition-all"
+          className="mt-8 max-w-md mx-auto flex items-center rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/60 p-1.5 shadow-xs transition-all"
         >
           <span className="pl-3.5 pr-1 text-sm font-mono text-[var(--grey3)] select-none">
             cvvd/
@@ -131,7 +131,7 @@ export function HomePage() {
               )
             }
             placeholder="your-name"
-            className="w-full bg-transparent py-2.5 text-sm font-mono text-[var(--grey1)] placeholder:text-[var(--grey4)] focus:outline-none focus:ring-0 outline-none no-focus-ring"
+            className="w-full bg-transparent py-2.5 text-sm font-mono text-[var(--grey1)] placeholder:text-[var(--grey4)] focus:outline-none focus:ring-0 outline-none border-none no-focus-ring"
           />
           <button
             type="submit"
@@ -399,14 +399,14 @@ export function HomePage() {
                 {/* Skills & Technologies */}
                 <div>
                   <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
-                    Skills & Technologies
+                    Skills & Areas of Expertise
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
                     <div className="font-mono text-[10px] text-neutral-400 sm:text-right uppercase">
                       Toolkit
                     </div>
                     <div className="text-neutral-700 text-[11.5px] leading-relaxed">
-                      Design Systems, Computational Typography, React, TypeScript, Tailwind CSS, Canvas & SVG, Figma
+                      Design Systems, Creative Direction, Brand Identity, Typography, Prototyping, Strategy & Writing
                     </div>
                   </div>
                 </div>

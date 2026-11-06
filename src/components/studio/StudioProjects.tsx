@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react'
 import type { UserProfile, ProjectItem } from '../../types/profile'
+import { MonthYearPicker } from '../MonthYearPicker'
 
 interface StudioProjectsProps {
   form: UserProfile
@@ -10,10 +11,10 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
   const addProject = () => {
     const newProj: ProjectItem = {
       id: `proj-${Date.now()}`,
-      title: 'New Project',
+      title: '',
       tagline: '',
       description: '',
-      year: new Date().getFullYear().toString(),
+      year: '',
       link: '',
       technologies: [],
       featured: false,
@@ -40,7 +41,7 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
             Side projects
           </h2>
           <p className="text-xs text-[var(--grey3)] mt-0.5">
-            Showcase indie apps, open source contributions, tools, and side quests.
+            Showcase indie apps, open source contributions, tools, publications, and initiatives.
           </p>
         </div>
         <button
@@ -60,7 +61,7 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
             className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/30 space-y-3"
           >
             <div className="flex justify-between items-start gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_120px_1fr] gap-3 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr] gap-3 w-full">
                 <input
                   type="text"
                   value={proj.title}
@@ -73,17 +74,6 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
                   className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm font-medium text-[var(--grey1)]"
                 />
                 <input
-                  type="text"
-                  value={proj.year}
-                  onChange={(e) => {
-                    const updated = [...form.projects]
-                    updated[idx].year = e.target.value
-                    setForm({ ...form, projects: updated })
-                  }}
-                  placeholder="Year"
-                  className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
-                />
-                <input
                   type="url"
                   value={proj.link}
                   onChange={(e) => {
@@ -91,8 +81,8 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
                     updated[idx].link = e.target.value
                     setForm({ ...form, projects: updated })
                   }}
-                  placeholder="https://..."
-                  className="px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
+                  placeholder="Website or repository URL (https://...)"
+                  className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
                 />
               </div>
 
@@ -106,32 +96,53 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input
-                type="text"
-                value={proj.tagline}
-                onChange={(e) => {
+            <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr_1fr] gap-3 items-end">
+              <MonthYearPicker
+                label="Date / Year"
+                value={proj.year}
+                onChange={(newVal) => {
                   const updated = [...form.projects]
-                  updated[idx].tagline = e.target.value
+                  updated[idx].year = newVal
                   setForm({ ...form, projects: updated })
                 }}
-                placeholder="Tagline / One-liner (e.g. Variable typography laboratory)"
-                className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
               />
-              <input
-                type="text"
-                value={proj.technologies.join(', ')}
-                onChange={(e) => {
-                  const updated = [...form.projects]
-                  updated[idx].technologies = e.target.value
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                  setForm({ ...form, projects: updated })
-                }}
-                placeholder="Technologies (e.g. Canvas, React, Vite)"
-                className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
-              />
+
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-mono text-[var(--grey3)] uppercase tracking-wider">
+                  Tagline
+                </span>
+                <input
+                  type="text"
+                  value={proj.tagline}
+                  onChange={(e) => {
+                    const updated = [...form.projects]
+                    updated[idx].tagline = e.target.value
+                    setForm({ ...form, projects: updated })
+                  }}
+                  placeholder="One-liner summary"
+                  className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-mono text-[var(--grey3)] uppercase tracking-wider">
+                  Tools / Technologies
+                </span>
+                <input
+                  type="text"
+                  value={proj.technologies.join(', ')}
+                  onChange={(e) => {
+                    const updated = [...form.projects]
+                    updated[idx].technologies = e.target.value
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                    setForm({ ...form, projects: updated })
+                  }}
+                  placeholder="Key tools, methodologies, materials"
+                  className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
+                />
+              </div>
             </div>
 
             <textarea
