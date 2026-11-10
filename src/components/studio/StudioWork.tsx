@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import type { UserProfile, WorkExperience } from '../../types/profile'
 import { MonthYearPicker } from '../MonthYearPicker'
+import { Checkbox } from '../Checkbox'
 
 interface StudioWorkProps {
   form: UserProfile
@@ -8,6 +10,26 @@ interface StudioWorkProps {
 }
 
 export function StudioWork({ form, setForm }: StudioWorkProps) {
+  const [techInputs, setTechInputs] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {}
+    form.experience.forEach((item) => {
+      initial[item.id] = item.technologies.join(', ')
+    })
+    return initial
+  })
+
+  useEffect(() => {
+    setTechInputs((prev) => {
+      const updated = { ...prev }
+      form.experience.forEach((item) => {
+        if (updated[item.id] === undefined) {
+          updated[item.id] = item.technologies.join(', ')
+        }
+      })
+      return updated
+    })
+  }, [form.experience])
+
   const addExperience = () => {
     const newItem: WorkExperience = {
       id: `exp-${Date.now()}`,
@@ -27,12 +49,18 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
       ...form,
       experience: [newItem, ...form.experience],
     })
+    setTechInputs((prev) => ({ ...prev, [newItem.id]: '' }))
   }
 
   const removeExperience = (id: string) => {
     setForm({
       ...form,
       experience: form.experience.filter((e) => e.id !== id),
+    })
+    setTechInputs((prev) => {
+      const copy = { ...prev }
+      delete copy[id]
+      return copy
     })
   }
 
@@ -113,21 +141,30 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
               />
               <input
                 type="text"
-                value={item.technologies.join(', ')}
+                value={techInputs[item.id] ?? item.technologies.join(', ')}
                 onChange={(e) => {
-                  const updated = [...form.experience]
-                  updated[idx].technologies = e.target.value
+                  const rawVal = e.target.value
+                  setTechInputs((prev) => ({ ...prev, [item.id]: rawVal }))
+
+                  const parsed = rawVal
                     .split(',')
                     .map((s) => s.trim())
                     .filter(Boolean)
+
+                  const updated = [...form.experience]
+                  updated[idx].technologies = parsed
                   setForm({ ...form, experience: updated })
+                }}
+                onBlur={() => {
+                  const formatted = item.technologies.join(', ')
+                  setTechInputs((prev) => ({ ...prev, [item.id]: formatted }))
                 }}
                 placeholder="Key skills / tools / technologies"
                 className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 items-end text-xs">
               <MonthYearPicker
                 label="Start Date"
                 value={item.startDate}
@@ -149,7 +186,7 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
                 }}
               />
 
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-1">
                 <span className="text-[11px] font-mono text-[var(--grey3)] uppercase tracking-wider">
                   Location & Status
                 </span>
@@ -163,22 +200,30 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
                       setForm({ ...form, experience: updated })
                     }}
                     placeholder="Location"
-                    className="flex-1 px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-[var(--grey1)]"
+                    className="flex-1 min-w-0 px-3 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
                   />
-                  <label className="flex items-center gap-1.5 cursor-pointer select-none text-[var(--grey2)] px-2 min-h-[44px] shrink-0">
-                    <input
-                      type="checkbox"
+                  <div
+                    onClick={() => {
+                      const next = !item.isCurrent
+                      const updated = [...form.experience]
+                      updated[idx].isCurrent = next
+                      if (next) updated[idx].endDate = 'Now'
+                      setForm({ ...form, experience: updated })
+                    }}
+                    className="flex items-center gap-2 cursor-pointer select-none text-[var(--grey2)] hover:text-[var(--grey1)] px-2 min-h-[44px] shrink-0 transition-colors"
+                  >
+                    <Checkbox
                       checked={item.isCurrent}
-                      onChange={(e) => {
+                      onCheckedChange={(checked) => {
                         const updated = [...form.experience]
-                        updated[idx].isCurrent = e.target.checked
-                        if (e.target.checked) updated[idx].endDate = 'Now'
+                        updated[idx].isCurrent = checked
+                        if (checked) updated[idx].endDate = 'Now'
                         setForm({ ...form, experience: updated })
                       }}
-                      className="rounded border-[var(--secondaryBorderColor)] text-[var(--grey1)] w-4 h-4"
+                      aria-label="Currently working here"
                     />
                     <span>Current</span>
-                  </label>
+                  </div>
                 </div>
               </div>
             </div>

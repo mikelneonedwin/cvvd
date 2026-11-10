@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Camera, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react'
 import {
   type UserProfile,
@@ -6,6 +6,8 @@ import {
   isAvailabilityState,
   isSocialPlatform,
 } from '../../types/profile'
+import { CustomSelect } from '../CustomSelect'
+import { isReservedHandle } from '../../lib/reservedHandles'
 
 interface StudioBasicsProps {
   form: UserProfile
@@ -89,6 +91,21 @@ export function StudioBasics({
   onAvatarUpload,
 }: StudioBasicsProps) {
   const avatarInputRef = useRef<HTMLInputElement>(null)
+  const [newlyAddedLinkId, setNewlyAddedLinkId] = useState<string | null>(null)
+  const urlInputsRef = useRef<Map<string, HTMLInputElement>>(new Map())
+
+  useEffect(() => {
+    if (newlyAddedLinkId) {
+      const input = urlInputsRef.current.get(newlyAddedLinkId)
+      if (input) {
+        input.focus()
+        // Position cursor at end of the prefix
+        const len = input.value.length
+        input.setSelectionRange(len, len)
+      }
+      setNewlyAddedLinkId(null)
+    }
+  }, [newlyAddedLinkId])
 
   const handlePlatformChange = (idx: number, newPlatform: SocialPlatform) => {
     const updated = [...form.basics.links]
@@ -236,7 +253,11 @@ export function StudioBasics({
           <label className="block text-xs font-mono text-[var(--grey3)] uppercase tracking-wider mb-1.5">
             Handle
           </label>
-          <div className="flex items-center rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] px-3.5 min-h-[44px] focus-within:ring-1 focus-within:ring-[var(--grey1)]">
+          <div className={`flex items-center rounded-xl border bg-[var(--backgroundColor)] px-3.5 min-h-[44px] focus-within:ring-1 ${
+            isReservedHandle(form.basics.handle)
+              ? 'border-rose-400 focus-within:ring-rose-500'
+              : 'border-[var(--secondaryBorderColor)] focus-within:ring-[var(--grey1)]'
+          }`}>
             <span className="text-sm font-mono text-[var(--grey3)] select-none">
               cvvd/
             </span>
@@ -257,6 +278,11 @@ export function StudioBasics({
               className="w-full py-2.5 pl-1 bg-transparent text-sm font-mono text-[var(--grey1)] focus:outline-none"
             />
           </div>
+          {isReservedHandle(form.basics.handle) && (
+            <p className="mt-1 text-[11px] text-rose-500 font-mono">
+              "{form.basics.handle.replace(/^cvvd\//, '')}" is a reserved system route.
+            </p>
+          )}
         </div>
       </div>
 
@@ -285,10 +311,9 @@ export function StudioBasics({
           <label className="block text-xs font-mono text-[var(--grey3)] uppercase tracking-wider mb-1.5">
             Availability Status
           </label>
-          <select
+          <CustomSelect
             value={form.basics.status.state}
-            onChange={(e) => {
-              const val = e.target.value
+            onChange={(val) => {
               if (isAvailabilityState(val)) {
                 setForm({
                   ...form,
@@ -299,13 +324,14 @@ export function StudioBasics({
                 })
               }
             }}
-            className="w-full px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm text-[var(--grey1)] focus:outline-none focus:ring-1 focus:ring-[var(--grey1)] transition-colors"
-          >
-            <option value="available">Available for work</option>
-            <option value="freelance">Freelance / Advisory</option>
-            <option value="busy">Busy</option>
-            <option value="employed">Employed</option>
-          </select>
+            options={[
+              { value: 'available', label: 'Available for work' },
+              { value: 'freelance', label: 'Freelance / Advisory' },
+              { value: 'busy', label: 'Busy' },
+              { value: 'employed', label: 'Employed' },
+            ]}
+            aria-label="Availability Status"
+          />
         </div>
 
         <div>
@@ -354,14 +380,15 @@ export function StudioBasics({
           </span>
           <button
             type="button"
-            onClick={() =>
+            onClick={() => {
+              const newId = `link-${Date.now()}`
               setForm({
                 ...form,
                 basics: {
                   ...form.basics,
                   links: [
                     {
-                      id: `link-${Date.now()}`,
+                      id: newId,
                       platform: 'website',
                       label: PLATFORM_DEFAULTS.website.label,
                       url: PLATFORM_DEFAULTS.website.urlPrefix,
@@ -370,7 +397,8 @@ export function StudioBasics({
                   ],
                 },
               })
-            }
+              setNewlyAddedLinkId(newId)
+            }}
             className="inline-flex items-center gap-1.5 min-h-[44px] px-3 py-2 text-xs font-medium text-[var(--grey1)] hover:underline active:scale-98"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -384,23 +412,23 @@ export function StudioBasics({
               key={link.id}
               className="p-3 rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/30 grid grid-cols-1 sm:grid-cols-[130px_1fr_1fr_44px_44px] gap-2 items-center"
             >
-              <select
+              <CustomSelect
                 value={link.platform}
-                onChange={(e) => {
-                  const val = e.target.value
+                onChange={(val) => {
                   if (isSocialPlatform(val)) {
                     handlePlatformChange(idx, val)
                   }
                 }}
-                className="px-2.5 min-h-[44px] rounded-lg border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
-              >
-                <option value="website">Website</option>
-                <option value="github">GitHub</option>
-                <option value="twitter">X (Twitter)</option>
-                <option value="linkedin">LinkedIn</option>
-                <option value="email">Email</option>
-                <option value="other">Other</option>
-              </select>
+                options={[
+                  { value: 'website', label: 'Website' },
+                  { value: 'github', label: 'GitHub' },
+                  { value: 'twitter', label: 'X (Twitter)' },
+                  { value: 'linkedin', label: 'LinkedIn' },
+                  { value: 'email', label: 'Email' },
+                  { value: 'other', label: 'Other' },
+                ]}
+                aria-label="Platform"
+              />
 
               <input
                 type="text"
@@ -418,6 +446,13 @@ export function StudioBasics({
               />
 
               <input
+                ref={(el) => {
+                  if (el) {
+                    urlInputsRef.current.set(link.id, el)
+                  } else {
+                    urlInputsRef.current.delete(link.id)
+                  }
+                }}
                 type="text"
                 value={link.url}
                 onChange={(e) => {

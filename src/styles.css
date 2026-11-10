@@ -145,11 +145,12 @@ a {
   text-align: right;
   margin-right: 28px;
   color: var(--grey3);
-  font-size: var(--type-size);
+  font-size: 13px;
   white-space: nowrap;
   font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
+  padding-top: 1px;
 }
 
 .readcv-duration-wrap {
@@ -158,11 +159,12 @@ a {
   text-align: right;
   margin-right: 28px;
   color: var(--grey3);
-  font-size: var(--type-size);
+  font-size: 13px;
   white-space: normal;
   line-height: 1.35;
   word-break: break-word;
   flex-shrink: 0;
+  padding-top: 1px;
 }
 
 .readcv-item-content {

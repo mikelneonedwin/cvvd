@@ -48,6 +48,7 @@ export interface ProjectItem {
   description: string
   year: string
   link: string
+  company?: string
   technologies: string[]
   featured: boolean
   imageUrl: string

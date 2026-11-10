@@ -70,6 +70,7 @@ export const projectItemSchema = z.object({
   description: z.string(),
   year: z.string(),
   link: z.string(),
+  company: z.string().optional(),
   technologies: z.array(z.string()),
   featured: z.boolean(),
   imageUrl: z.string(),

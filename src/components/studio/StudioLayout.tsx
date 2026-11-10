@@ -1,4 +1,6 @@
 import type { UserProfile, LayoutPreset } from '../../types/profile'
+import { CustomSelect } from '../CustomSelect'
+import { Checkbox } from '../Checkbox'
 
 interface StudioLayoutProps {
   form: UserProfile
@@ -93,23 +95,26 @@ export function StudioLayout({ form, setForm }: StudioLayoutProps) {
                 Compact reduces line-heights and margins to fit tight 1-page CVs.
               </div>
             </div>
-            <select
-              value={form.printSettings.density}
-              onChange={(e) => {
-                const density = e.target.value === 'compact' ? 'compact' : 'comfortable'
-                setForm({
-                  ...form,
-                  printSettings: {
-                    ...form.printSettings,
-                    density,
-                  },
-                })
-              }}
-              className="px-3 min-h-[44px] rounded-lg border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-medium text-[var(--grey1)]"
-            >
-              <option value="comfortable">Comfortable (Standard)</option>
-              <option value="compact">Compact (Tight fit)</option>
-            </select>
+            <div className="w-full sm:w-[200px] shrink-0">
+              <CustomSelect
+                value={form.printSettings.density}
+                onChange={(val) => {
+                  const density = val === 'compact' ? 'compact' : 'comfortable'
+                  setForm({
+                    ...form,
+                    printSettings: {
+                      ...form.printSettings,
+                      density,
+                    },
+                  })
+                }}
+                options={[
+                  { value: 'comfortable', label: 'Comfortable (Standard)' },
+                  { value: 'compact', label: 'Compact (Tight fit)' },
+                ]}
+                aria-label="Print spacing density"
+              />
+            </div>
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-[var(--secondaryBorderColor)] min-h-[44px]">
@@ -121,19 +126,18 @@ export function StudioLayout({ form, setForm }: StudioLayoutProps) {
                 Hidden by default in authentic read.cv sheets.
               </div>
             </div>
-            <input
-              type="checkbox"
+            <Checkbox
               checked={form.printSettings.showAvatarInPrint}
-              onChange={(e) =>
+              onCheckedChange={(checked) =>
                 setForm({
                   ...form,
                   printSettings: {
                     ...form.printSettings,
-                    showAvatarInPrint: e.target.checked,
+                    showAvatarInPrint: checked,
                   },
                 })
               }
-              className="w-5 h-5 rounded border-[var(--secondaryBorderColor)] text-[var(--grey1)] cursor-pointer"
+              aria-label="Include photo in printed CV"
             />
           </div>
 
@@ -146,19 +150,18 @@ export function StudioLayout({ form, setForm }: StudioLayoutProps) {
                 Print full URLs alongside linked items.
               </div>
             </div>
-            <input
-              type="checkbox"
+            <Checkbox
               checked={form.printSettings.includeLinksInPrint}
-              onChange={(e) =>
+              onCheckedChange={(checked) =>
                 setForm({
                   ...form,
                   printSettings: {
                     ...form.printSettings,
-                    includeLinksInPrint: e.target.checked,
+                    includeLinksInPrint: checked,
                   },
                 })
               }
-              className="w-5 h-5 rounded border-[var(--secondaryBorderColor)] text-[var(--grey1)] cursor-pointer"
+              aria-label="Include links in printed CV"
             />
           </div>
         </div>

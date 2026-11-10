@@ -4,9 +4,10 @@ import { TRPCError } from '@trpc/server'
 import { publicProcedure, protectedProcedure, router } from './init'
 import { profiles, avatarBlobs } from '../db/schema'
 import { initialProfile } from '../data/initialProfile'
-import { DEMO_PROFILES, FEATURED_CREATORS, type FeaturedCreatorSummary } from '../data/demoProfiles'
+import { type FeaturedCreatorSummary } from '../data/demoProfiles'
 import { userProfileSchema } from '../db/schema.zod'
 import { uploadImageToCloudinary } from '../lib/cloudinary'
+import { isReservedHandle } from '../lib/reservedHandles'
 import type { UserProfile } from '../types/profile'
 
 function sanitizeHandle(raw: string): string {
@@ -29,12 +30,6 @@ export const appRouter = router({
         })
 
         if (!profileRecord) {
-          if (cleanHandle in DEMO_PROFILES) {
-            return DEMO_PROFILES[cleanHandle]
-          }
-          if (cleanHandle === '') {
-            return DEMO_PROFILES.elena
-          }
           return null
         }
 
@@ -194,6 +189,14 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const cleanHandle = sanitizeHandle(input.basics.handle)
 
+        // Check for reserved route names
+        if (cleanHandle && isReservedHandle(cleanHandle)) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `"${cleanHandle}" is a reserved system route and cannot be used as a handle.`,
+          })
+        }
+
         // Check if handle is taken by someone else
         if (cleanHandle) {
           const conflicting = await ctx.db.query.profiles.findFirst({
@@ -315,7 +318,7 @@ export const appRouter = router({
         name: r.name,
         headline: r.headline,
         location: r.location || '',
-        avatarUrl: r.avatarUrl || DEMO_PROFILES.elena.basics.avatarUrl,
+        avatarUrl: r.avatarUrl || '',
         statusState: r.statusState,
         statusLabel: r.statusLabel || '',
         craft: 'Builder',
@@ -323,14 +326,7 @@ export const appRouter = router({
         company: 'cvvd',
       }))
 
-      const combined = [
-        ...dbFeatured,
-        ...FEATURED_CREATORS.filter(
-          (c) => !dbFeatured.some((d) => d.handle === c.handle)
-        ),
-      ]
-
-      return combined
+      return dbFeatured
     }),
 
     listAll: publicProcedure.query(async ({ ctx }) => {
@@ -343,7 +339,7 @@ export const appRouter = router({
         name: r.name,
         headline: r.headline,
         location: r.location || '',
-        avatarUrl: r.avatarUrl || DEMO_PROFILES.elena.basics.avatarUrl,
+        avatarUrl: r.avatarUrl || '',
         statusState: r.statusState,
         statusLabel: r.statusLabel || '',
         craft: 'Builder',
@@ -351,14 +347,7 @@ export const appRouter = router({
         company: 'cvvd',
       }))
 
-      const combined = [
-        ...dbUsers,
-        ...FEATURED_CREATORS.filter(
-          (c) => !dbUsers.some((d) => d.handle === c.handle)
-        ),
-      ]
-
-      return combined
+      return dbUsers
     }),
   }),
 })

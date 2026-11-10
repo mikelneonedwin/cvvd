@@ -1,5 +1,5 @@
-import React from 'react'
 import { MONTHS, YEARS, parseDateString, formatDateString, type MonthAbbr } from '../lib/dateUtils'
+import { CustomSelect } from './CustomSelect'
 
 interface MonthYearPickerProps {
   label?: string
@@ -18,13 +18,21 @@ export function MonthYearPicker({
 }: MonthYearPickerProps) {
   const parsed = parseDateString(value)
 
-  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newMonth = e.target.value as MonthAbbr | ''
-    onChange(formatDateString({ month: newMonth, year: parsed.year }))
+  const monthOptions = [
+    { value: '', label: 'Month (opt)' },
+    ...MONTHS.map((m) => ({ value: m, label: m })),
+  ]
+
+  const yearOptions = [
+    { value: '', label: 'Year' },
+    ...YEARS.map((y) => ({ value: y, label: y })),
+  ]
+
+  const handleMonthChange = (newMonth: string) => {
+    onChange(formatDateString({ month: (newMonth as MonthAbbr) || '', year: parsed.year }))
   }
 
-  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newYear = e.target.value
+  const handleYearChange = (newYear: string) => {
     onChange(formatDateString({ month: parsed.month, year: newYear }))
   }
 
@@ -36,35 +44,21 @@ export function MonthYearPicker({
         </span>
       )}
       <div className="grid grid-cols-2 gap-2">
-        <select
+        <CustomSelect
           value={parsed.month}
           disabled={disabled}
           onChange={handleMonthChange}
+          options={monthOptions}
           aria-label={`${label || 'Date'} month`}
-          className="px-2.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)] disabled:opacity-50 transition-colors"
-        >
-          <option value="">Month (opt)</option>
-          {MONTHS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+        />
 
-        <select
+        <CustomSelect
           value={parsed.year}
           disabled={disabled}
           onChange={handleYearChange}
+          options={yearOptions}
           aria-label={`${label || 'Date'} year`}
-          className="px-2.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)] disabled:opacity-50 transition-colors"
-        >
-          <option value="">Year</option>
-          {YEARS.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
+        />
       </div>
     </div>
   )

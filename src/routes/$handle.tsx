@@ -15,14 +15,16 @@ export const Route = createFileRoute('/$handle')({
     const clean = (params.handle || 'creator').toLowerCase().replace(/^@/, '')
     const title = `${clean} - Cvvd profile`
     const description = `View ${clean}'s living profile and printable CV on Cvvd.`
+    const profileUrl = `https://cvvd.vercel.app/${clean}`
     return {
       meta: [
         { title },
         { name: 'description', content: description },
+        { property: 'og:site_name', content: 'Cvvd' },
+        { property: 'og:type', content: 'profile' },
         { property: 'og:title', content: title },
         { property: 'og:description', content: description },
-        { property: 'og:url', content: `https://cvvd.vercel.app/${clean}` },
-        { property: 'og:type', content: 'profile' },
+        { property: 'og:url', content: profileUrl },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: title },
         { name: 'twitter:description', content: description },
@@ -40,7 +42,7 @@ function ProfileHandlePage() {
   const loadedHandleRef = useRef<string | null>(null)
 
   // Clean handle parameter
-  const cleanHandle = (handle || 'elena').toLowerCase().replace(/^@/, '')
+  const cleanHandle = (handle || '').toLowerCase().replace(/^@/, '')
 
   // Fetch logged-in user profile to verify ownership of current profile
   const { data: myProfileData } = useQuery({
@@ -108,15 +110,15 @@ function ProfileHandlePage() {
 
     // OpenGraph Title & Description & Image & URL
     let ogTitle = document.querySelector('meta[property="og:title"]')
-    if (ogTitle) ogTitle.setAttribute('content', `${basics.name} - Cvvd`)
+    if (ogTitle) ogTitle.setAttribute('content', `${basics.name} (@${cleanHandle}) - Cvvd`)
     let ogDesc = document.querySelector('meta[property="og:description"]')
     if (ogDesc)
       ogDesc.setAttribute(
         'content',
-        `${basics.headline} ${basics.location ? `in ${basics.location}` : ''}`
+        `${basics.headline}${basics.location ? ` in ${basics.location}` : ''}. View living profile and printable CV on Cvvd.`
       )
     let ogUrl = document.querySelector('meta[property="og:url"]')
-    if (ogUrl) ogUrl.setAttribute('content', `https://cvvd.vercel.app/${cleanHandle}`)
+    if (ogUrl) ogUrl.setAttribute('content', window.location.href)
     let ogImage = document.querySelector('meta[property="og:image"]')
     if (!ogImage && basics.avatarUrl) {
       ogImage = document.createElement('meta')
@@ -132,7 +134,7 @@ function ProfileHandlePage() {
     if (twDesc)
       twDesc.setAttribute(
         'content',
-        `${basics.headline} ${basics.location ? `in ${basics.location}` : ''}`
+        `${basics.headline}${basics.location ? ` in ${basics.location}` : ''}. View living profile and printable CV on Cvvd.`
       )
     let twImage = document.querySelector('meta[name="twitter:image"]')
     if (!twImage && basics.avatarUrl) {

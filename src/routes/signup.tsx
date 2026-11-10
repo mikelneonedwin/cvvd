@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { CvvdLogo, GoogleIcon } from '../components/CvvdIcons'
 import { authClient } from '../lib/auth-client'
+import { isReservedHandle } from '../lib/reservedHandles'
 import { Loader2 } from 'lucide-react'
 
 interface SignUpSearch {
@@ -31,8 +32,13 @@ function SignUpPage() {
 
   const handleGoogleSignUp = async () => {
     setError(null)
-    setSocialLoading(true)
     const cleanHandle = handle.trim().toLowerCase().replace(/^@/, '')
+    if (cleanHandle && isReservedHandle(cleanHandle)) {
+      setError(`"${cleanHandle}" is a reserved system route. Please choose another handle.`)
+      return
+    }
+
+    setSocialLoading(true)
     if (cleanHandle && typeof window !== 'undefined') {
       sessionStorage.setItem('cvvd_desired_handle', cleanHandle)
     }

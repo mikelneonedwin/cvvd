@@ -16,9 +16,10 @@ export const MONTHS = [
 export type MonthAbbr = (typeof MONTHS)[number]
 
 const currentYear = new Date().getFullYear()
-// Generate years from currentYear + 10 down to 1970
-export const YEARS: readonly string[] = Array.from({ length: currentYear + 10 - 1970 + 1 }, (_, i) =>
-  String(currentYear + 10 - i)
+// Generate years from currentYear + 1 down to 1970 so 2026 and current years are immediately visible without long scrolling
+export const YEARS: readonly string[] = Array.from(
+  { length: currentYear + 1 - 1970 + 1 },
+  (_, i) => String(currentYear + 1 - i)
 )
 
 export interface ParsedDate {
