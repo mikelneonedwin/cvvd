@@ -13,7 +13,7 @@ import { CvvdLogo, GitHubIcon } from '../components/CvvdIcons'
 import { trpc } from '../trpc/client'
 import { useSession } from '../lib/auth-client'
 import { useTheme } from '../context/ThemeContext'
-import { FEATURED_CREATORS } from '../data/demoProfiles'
+import { isReservedHandle } from '../lib/reservedHandles'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -27,6 +27,7 @@ export function HomePage() {
   const navigate = useNavigate()
 
   const [desiredHandle, setDesiredHandle] = useState('')
+  const [handleError, setHandleError] = useState<string | null>(null)
   const [previewMode, setPreviewMode] = useState<PreviewMode>('web')
 
   const { data: featuredCreators } = useQuery(
@@ -35,8 +36,13 @@ export function HomePage() {
 
   const handleClaimSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setHandleError(null)
     const clean = desiredHandle.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
     if (clean) {
+      if (isReservedHandle(clean)) {
+        setHandleError(`"${clean}" is a reserved system route. Please choose another handle.`)
+        return
+      }
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('cvvd_desired_handle', clean)
       }
@@ -49,7 +55,7 @@ export function HomePage() {
     }
   }
 
-  const creators = featuredCreators && featuredCreators.length > 0 ? featuredCreators : FEATURED_CREATORS
+  const creators = featuredCreators || []
 
   return (
     <div className="min-h-screen bg-[var(--backgroundColor)] text-[var(--grey1)] selection:bg-[var(--grey2)] selection:text-[var(--backgroundColor)] transition-colors duration-200">
@@ -142,14 +148,20 @@ export function HomePage() {
           </button>
         </form>
 
+        {handleError && (
+          <p className="mt-2 text-xs text-rose-500 font-mono text-center">
+            {handleError}
+          </p>
+        )}
+
         <div className="mt-4 text-xs text-[var(--grey3)]">
           <span>Free forever. Instant claim. Or </span>
           <Link
             to="/$handle"
-            params={{ handle: 'elena' }}
+            params={{ handle: 'mikelneonedwin' }}
             className="text-[var(--grey2)] underline hover:text-[var(--grey1)]"
           >
-            explore Elena Vance's living CV
+            explore Winner Edwin's living CV
           </Link>
         </div>
       </section>
@@ -206,16 +218,16 @@ export function HomePage() {
               <div className="flex justify-between items-start gap-4">
                 <div className="space-y-1.5">
                   <h3 className="text-xl font-normal text-[var(--grey1)]">
-                    Elena Vance
+                    Winner Edwin
                   </h3>
                   <p className="text-xs text-[var(--grey3)]">
-                    Staff Product Designer and Creative Technologist in San Francisco, CA
+                    Software Engineer in Uyo, Nigeria
                   </p>
                 </div>
                 <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--grey4)] shrink-0 ring-1 ring-[var(--secondaryBorderColor)]">
                   <img
-                    src="https://res.cloudinary.com/winneredwin/image/upload/v1793721346/cvvd/avatars/elena.svg"
-                    alt="Elena Vance"
+                    src="https://lh3.googleusercontent.com/a/ACg8ocJ0xfPH6gfARpcf7a5mmQQWGTTpXh51PKt0AHX9A3x7lJkVfMBo=s96-c"
+                    alt="Winner Edwin"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -225,7 +237,7 @@ export function HomePage() {
               <div className="space-y-2 border-t border-[var(--secondaryBorderColor)] pt-5">
                 <div className="text-sm font-normal text-[var(--grey3)]">About</div>
                 <p className="text-xs text-[var(--grey2)] leading-relaxed sm:ml-[100px]">
-                  Designing tools for thought, high-density interfaces, and robust design systems. Previously Staff Designer at Linear and Design Systems Lead at Stripe.
+                  Fullstack developer who enjoys understanding how things work and building them properly. Five years building products across React, Next.js, and backend systems.
                 </p>
               </div>
 
@@ -237,34 +249,34 @@ export function HomePage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-2 sm:gap-4 text-xs">
                     <div className="text-[var(--grey3)] font-mono sm:text-right">
-                      2023 - Now
+                      2025 - Now
                     </div>
                     <div>
                       <div className="font-medium text-[var(--grey1)]">
-                        Staff Product Designer at Linear
+                        Software Engineer at Applift Labs
                       </div>
                       <div className="text-[var(--grey3)] text-[11px] mt-0.5">
-                        San Francisco, CA (Remote)
+                        Uyo, Nigeria
                       </div>
                       <p className="text-[var(--grey2)] mt-1.5 leading-relaxed">
-                        Leading product design for workflow velocity, desktop app interactions, and command menu orchestration across web and native clients.
+                        Took ownership of frontend development and helped turn requirements into shipped software across multi-tenant platforms, internal tools, and ERPs.
                       </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-2 sm:gap-4 text-xs pt-2">
                     <div className="text-[var(--grey3)] font-mono sm:text-right">
-                      2020 - 2023
+                      2025
                     </div>
                     <div>
                       <div className="font-medium text-[var(--grey1)]">
-                        Design Systems Lead at Stripe
+                        Frontend Developer at LawdAm
                       </div>
                       <div className="text-[var(--grey3)] text-[11px] mt-0.5">
-                        San Francisco, CA
+                        Uyo, Nigeria
                       </div>
                       <p className="text-[var(--grey2)] mt-1.5 leading-relaxed">
-                        Oversaw Sailor design system foundations, color science, and component infrastructure supporting thousands of internal engineers.
+                        Led web app development as primary client developer, building features around anonymous group chats, direct messages, and identity switching.
                       </p>
                     </div>
                   </div>
@@ -273,10 +285,10 @@ export function HomePage() {
 
               {/* Live Preview Bar */}
               <div className="pt-4 border-t border-[var(--secondaryBorderColor)] flex items-center justify-between text-xs">
-                <span className="font-mono text-[var(--grey3)]">cvvd/elena</span>
+                <span className="font-mono text-[var(--grey3)]">cvvd/mikelneonedwin</span>
                 <Link
                   to="/$handle"
-                  params={{ handle: 'elena' }}
+                  params={{ handle: 'mikelneonedwin' }}
                   className="inline-flex items-center gap-1 font-medium text-[var(--grey1)] hover:underline"
                 >
                   <span>Open live profile</span>
@@ -291,17 +303,17 @@ export function HomePage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-2xl font-normal tracking-tight text-neutral-950">
-                      Elena Vance
+                      Winner Edwin
                     </h3>
                     <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest border border-neutral-300 px-1.5 py-0.5 rounded">
                       Cvvd
                     </span>
                   </div>
                   <p className="text-xs text-neutral-700 font-medium">
-                    Staff Product Designer and Creative Technologist
+                    Software Engineer
                   </p>
                   <p className="text-[11px] font-mono text-neutral-500">
-                    San Francisco, CA · elenavance.design · elena@vance.design
+                    Uyo, Nigeria · mikelneonedwin.vercel.app · winneredwin2667@gmail.com
                   </p>
                 </div>
                 <div className="text-left sm:text-right font-mono text-[10px] text-neutral-400 shrink-0">
@@ -320,34 +332,34 @@ export function HomePage() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
                       <div className="font-mono text-[11px] text-neutral-500 sm:text-right">
-                        2023 - Now
+                        2025 - Now
                       </div>
                       <div>
                         <div className="font-medium text-neutral-950">
-                          Staff Product Designer at Linear
+                          Software Engineer at Applift Labs
                         </div>
                         <div className="text-[11px] text-neutral-500 mt-0.5">
-                          San Francisco, CA (Remote)
+                          Uyo, Nigeria
                         </div>
                         <p className="text-neutral-700 mt-1 leading-relaxed text-[11.5px]">
-                          Architected keyboard navigation engine, reducing command discovery time by 34%. Led the virtualized canvas roadmap redesign.
+                          Frontend architecture, multi-tenant SaaS systems, ERP integrations, and internal developer tooling.
                         </p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
                       <div className="font-mono text-[11px] text-neutral-500 sm:text-right">
-                        2020 - 2023
+                        2025
                       </div>
                       <div>
                         <div className="font-medium text-neutral-950">
-                          Design Systems Lead at Stripe
+                          Frontend Developer at LawdAm
                         </div>
                         <div className="text-[11px] text-neutral-500 mt-0.5">
-                          San Francisco, CA
+                          Uyo, Nigeria
                         </div>
                         <p className="text-neutral-700 mt-1 leading-relaxed text-[11.5px]">
-                          Engineered automated multi-theme token pipeline with WCAG AAA accessibility guarantees. Unified 40+ financial data primitives.
+                          Primary client developer for anonymous group chats, messaging workflows, and cross-platform identity sync.
                         </p>
                       </div>
                     </div>
@@ -357,19 +369,19 @@ export function HomePage() {
                 {/* Selected Projects */}
                 <div>
                   <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
-                    Side projects & Open Source
+                    Projects
                   </div>
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
                       <div className="font-mono text-[11px] text-neutral-500 sm:text-right">
-                        2023
+                        2025
                       </div>
                       <div>
                         <div className="font-medium text-neutral-950">
-                          Monolith Editor
+                          Modools (Applift Labs)
                         </div>
                         <p className="text-neutral-700 mt-0.5 leading-relaxed text-[11.5px]">
-                          Distraction-free Markdown writing environment engineered for deep prose sessions with typographic margins.
+                          Digital platform replacing STEM lab manuals in Nigerian universities with structured video practicals and automated tracking.
                         </p>
                       </div>
                     </div>
@@ -383,30 +395,15 @@ export function HomePage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
                     <div className="font-mono text-[11px] text-neutral-500 sm:text-right">
-                      2014 - 2018
+                      2024 - 2027
                     </div>
                     <div>
                       <div className="font-medium text-neutral-950">
-                        Rhode Island School of Design (RISD)
+                        University of Uyo (UNIUYO)
                       </div>
                       <p className="text-neutral-700 text-[11.5px] mt-0.5">
-                        BFA Graphic Design and Computational Arts with Departmental Honors
+                        BSc Computer Science
                       </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Skills & Technologies */}
-                <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
-                    Skills & Areas of Expertise
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
-                    <div className="font-mono text-[10px] text-neutral-400 sm:text-right uppercase">
-                      Toolkit
-                    </div>
-                    <div className="text-neutral-700 text-[11.5px] leading-relaxed">
-                      Design Systems, Creative Direction, Brand Identity, Typography, Prototyping, Strategy & Writing
                     </div>
                   </div>
                 </div>

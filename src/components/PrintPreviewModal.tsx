@@ -71,7 +71,7 @@ export function PrintPreviewModal() {
   }> = [
     { key: 'about', label: 'About' },
     { key: 'experience', label: 'Work experience', count: experience.length },
-    { key: 'projects', label: 'Side projects', count: projects.length },
+    { key: 'projects', label: 'Projects', count: projects.length },
     { key: 'writing', label: 'Writing', count: writing.length },
     { key: 'education', label: 'Education', count: education.length },
     { key: 'skills', label: 'Skills', count: skillCategories.length },
@@ -387,13 +387,20 @@ export function PrintPreviewModal() {
                     {sectionVisibility.projects && projects.length > 0 && (
                       <div>
                         <h2 className="text-[11px] font-medium text-black mb-1">
-                          Side projects
+                          Projects
                         </h2>
                         <div className="space-y-2">
                           {projects.map((proj) => (
                             <div key={proj.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className="font-medium text-black">{proj.title}</div>
+                                <div className="font-medium text-black">
+                                  {proj.title}
+                                  {proj.company && (
+                                    <span className="text-neutral-500 font-normal ml-1">
+                                      at {proj.company}
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="text-neutral-500 font-mono text-[9.5px]">{proj.year}</div>
                               </div>
                               {proj.description && <p className="text-neutral-700 mt-0.5">{proj.description}</p>}
@@ -557,12 +564,19 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.projects && projects.length > 0 && (
                         <div>
-                          <h2 className="text-[10.5px] font-medium text-black mb-1">Side projects</h2>
+                          <h2 className="text-[10.5px] font-medium text-black mb-1">Projects</h2>
                           <div className="space-y-2 text-[9.5px]">
                             {projects.map((proj) => (
                               <div key={proj.id}>
                                 <div className="flex justify-between items-baseline">
-                                  <div className="font-medium text-black">{proj.title}</div>
+                                  <div className="font-medium text-black">
+                                    {proj.title}
+                                    {proj.company && (
+                                      <span className="text-neutral-500 font-normal ml-1">
+                                        at {proj.company}
+                                      </span>
+                                    )}
+                                  </div>
                                   <div className="text-neutral-400 font-mono text-[8.5px]">{proj.year}</div>
                                 </div>
                                 {proj.description && <p className="text-neutral-700 mt-0.5">{proj.description}</p>}
@@ -671,11 +685,11 @@ export function PrintPreviewModal() {
                         </div>
                       )}
 
-                      {/* Side Projects */}
+                      {/* Projects */}
                       {sectionVisibility.projects && projects.length > 0 && (
                         <div>
                           <h2 className="text-[11px] font-medium text-black mb-1">
-                            Side projects
+                            Projects
                           </h2>
                           <div className="space-y-2">
                             {projects.map((proj) => (
@@ -684,7 +698,14 @@ export function PrintPreviewModal() {
                                   {proj.year}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="font-medium text-black">{proj.title}</div>
+                                  <div className="font-medium text-black">
+                                    {proj.title}
+                                    {proj.company && (
+                                      <span className="text-neutral-500 font-normal ml-1">
+                                        at {proj.company}
+                                      </span>
+                                    )}
+                                  </div>
                                   {proj.description && (
                                     <p className="text-neutral-700 mt-0.5 leading-normal">
                                       {proj.description}

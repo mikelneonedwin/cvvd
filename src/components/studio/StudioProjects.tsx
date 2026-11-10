@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import type { UserProfile, ProjectItem } from '../../types/profile'
-import { MonthYearPicker } from '../MonthYearPicker'
+import { YEARS, parseDateString } from '../../lib/dateUtils'
+import { CustomSelect } from '../CustomSelect'
 
 interface StudioProjectsProps {
   form: UserProfile
@@ -8,10 +10,33 @@ interface StudioProjectsProps {
 }
 
 export function StudioProjects({ form, setForm }: StudioProjectsProps) {
+  // Local raw input state per project id so typing spaces and commas feels completely natural
+  const [techInputs, setTechInputs] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {}
+    form.projects.forEach((p) => {
+      initial[p.id] = p.technologies.join(', ')
+    })
+    return initial
+  })
+
+  // Sync incoming projects if they differ and are not actively being edited
+  useEffect(() => {
+    setTechInputs((prev) => {
+      const updated = { ...prev }
+      form.projects.forEach((p) => {
+        if (updated[p.id] === undefined) {
+          updated[p.id] = p.technologies.join(', ')
+        }
+      })
+      return updated
+    })
+  }, [form.projects])
+
   const addProject = () => {
     const newProj: ProjectItem = {
       id: `proj-${Date.now()}`,
       title: '',
+      company: '',
       tagline: '',
       description: '',
       year: '',
@@ -24,12 +49,18 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
       ...form,
       projects: [newProj, ...form.projects],
     })
+    setTechInputs((prev) => ({ ...prev, [newProj.id]: '' }))
   }
 
   const removeProject = (id: string) => {
     setForm({
       ...form,
       projects: form.projects.filter((p) => p.id !== id),
+    })
+    setTechInputs((prev) => {
+      const copy = { ...prev }
+      delete copy[id]
+      return copy
     })
   }
 
@@ -38,7 +69,7 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-medium text-[var(--grey1)]">
-            Side projects
+            Projects
           </h2>
           <p className="text-xs text-[var(--grey3)] mt-0.5">
             Showcase indie apps, open source contributions, tools, publications, and initiatives.
@@ -61,7 +92,7 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
             className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/30 space-y-3"
           >
             <div className="flex justify-between items-start gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr] gap-3 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
                 <input
                   type="text"
                   value={proj.title}
@@ -72,6 +103,17 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
                   }}
                   placeholder="Project title"
                   className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm font-medium text-[var(--grey1)]"
+                />
+                <input
+                  type="text"
+                  value={proj.company ?? ''}
+                  onChange={(e) => {
+                    const updated = [...form.projects]
+                    updated[idx].company = e.target.value
+                    setForm({ ...form, projects: updated })
+                  }}
+                  placeholder="Company / Client (optional)"
+                  className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
                 />
                 <input
                   type="url"
@@ -96,16 +138,25 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr_1fr] gap-3 items-end">
-              <MonthYearPicker
-                label="Date / Year"
-                value={proj.year}
-                onChange={(newVal) => {
-                  const updated = [...form.projects]
-                  updated[idx].year = newVal
-                  setForm({ ...form, projects: updated })
-                }}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr_1fr] gap-3 items-end">
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-mono text-[var(--grey3)] uppercase tracking-wider">
+                  Year
+                </span>
+                <CustomSelect
+                  value={parseDateString(proj.year).year || proj.year}
+                  onChange={(newYear) => {
+                    const updated = [...form.projects]
+                    updated[idx].year = newYear
+                    setForm({ ...form, projects: updated })
+                  }}
+                  options={[
+                    { value: '', label: 'Year' },
+                    ...YEARS.map((y) => ({ value: y, label: y })),
+                  ]}
+                  aria-label="Project year"
+                />
+              </div>
 
               <div className="flex flex-col gap-1">
                 <span className="text-[11px] font-mono text-[var(--grey3)] uppercase tracking-wider">
@@ -130,14 +181,24 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
                 </span>
                 <input
                   type="text"
-                  value={proj.technologies.join(', ')}
+                  value={techInputs[proj.id] ?? proj.technologies.join(', ')}
                   onChange={(e) => {
-                    const updated = [...form.projects]
-                    updated[idx].technologies = e.target.value
+                    const rawVal = e.target.value
+                    setTechInputs((prev) => ({ ...prev, [proj.id]: rawVal }))
+
+                    const parsed = rawVal
                       .split(',')
                       .map((s) => s.trim())
                       .filter(Boolean)
+
+                    const updated = [...form.projects]
+                    updated[idx].technologies = parsed
                     setForm({ ...form, projects: updated })
+                  }}
+                  onBlur={() => {
+                    // Clean up and format cleanly on blur
+                    const formatted = proj.technologies.join(', ')
+                    setTechInputs((prev) => ({ ...prev, [proj.id]: formatted }))
                   }}
                   placeholder="Key tools, methodologies, materials"
                   className="px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs text-[var(--grey1)]"
