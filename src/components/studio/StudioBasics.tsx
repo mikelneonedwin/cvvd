@@ -259,11 +259,11 @@ export function StudioBasics({
               : 'border-[var(--secondaryBorderColor)] focus-within:ring-[var(--grey1)]'
           }`}>
             <span className="text-sm font-mono text-[var(--grey3)] select-none">
-              cvvd/
+              cvvd/u/
             </span>
             <input
               type="text"
-              value={form.basics.handle.replace(/^cvvd\//, '')}
+              value={form.basics.handle.replace(/^cvvd\/u\//, '').replace(/^cvvd\//, '').replace(/^u\//, '')}
               onChange={(e) => {
                 const clean = e.target.value
                   .toLowerCase()
@@ -272,7 +272,7 @@ export function StudioBasics({
                 setRawHandle(clean)
                 setForm({
                   ...form,
-                  basics: { ...form.basics, handle: `cvvd/${clean}` },
+                  basics: { ...form.basics, handle: `cvvd/u/${clean}` },
                 })
               }}
               className="w-full py-2.5 pl-1 bg-transparent text-sm font-mono text-[var(--grey1)] focus:outline-none"
@@ -280,7 +280,7 @@ export function StudioBasics({
           </div>
           {isReservedHandle(form.basics.handle) && (
             <p className="mt-1 text-[11px] text-rose-500 font-mono">
-              "{form.basics.handle.replace(/^cvvd\//, '')}" is a reserved system route.
+              "{form.basics.handle.replace(/^cvvd\/u\//, '').replace(/^cvvd\//, '')}" is a reserved system route.
             </p>
           )}
         </div>

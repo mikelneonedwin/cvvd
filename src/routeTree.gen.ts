@@ -16,8 +16,10 @@ import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as UUsernameRouteImport } from './routes/u/$username'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAvatarIdRouteImport } from './routes/api/avatar/$id'
+import { Route as ApiOgHandleRouteImport } from './routes/api/og/$handle'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api/trpc/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -55,6 +57,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -63,6 +70,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 const ApiAvatarIdRoute = ApiAvatarIdRouteImport.update({
   id: '/api/avatar/$id',
   path: '/api/avatar/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOgHandleRoute = ApiOgHandleRouteImport.update({
+  id: '/api/og/$handle',
+  path: '/api/og/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
@@ -79,8 +91,10 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/u/$username': typeof UUsernameRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatar/$id': typeof ApiAvatarIdRoute
+  '/api/og/$handle': typeof ApiOgHandleRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
@@ -91,8 +105,10 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/u/$username': typeof UUsernameRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatar/$id': typeof ApiAvatarIdRoute
+  '/api/og/$handle': typeof ApiOgHandleRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesById {
@@ -104,8 +120,10 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/u/$username': typeof UUsernameRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatar/$id': typeof ApiAvatarIdRoute
+  '/api/og/$handle': typeof ApiOgHandleRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRouteTypes {
@@ -118,8 +136,10 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/signup'
+    | '/u/$username'
     | '/api/auth/$'
     | '/api/avatar/$id'
+    | '/api/og/$handle'
     | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -130,8 +150,10 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/signup'
+    | '/u/$username'
     | '/api/auth/$'
     | '/api/avatar/$id'
+    | '/api/og/$handle'
     | '/api/trpc/$'
   id:
     | '__root__'
@@ -142,8 +164,10 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/signup'
+    | '/u/$username'
     | '/api/auth/$'
     | '/api/avatar/$id'
+    | '/api/og/$handle'
     | '/api/trpc/$'
   fileRoutesById: FileRoutesById
 }
@@ -155,8 +179,10 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  UUsernameRoute: typeof UUsernameRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiAvatarIdRoute: typeof ApiAvatarIdRoute
+  ApiOgHandleRoute: typeof ApiOgHandleRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
 }
 
@@ -211,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -223,6 +256,13 @@ declare module '@tanstack/react-router' {
       path: '/api/avatar/$id'
       fullPath: '/api/avatar/$id'
       preLoaderRoute: typeof ApiAvatarIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/og/$handle': {
+      id: '/api/og/$handle'
+      path: '/api/og/$handle'
+      fullPath: '/api/og/$handle'
+      preLoaderRoute: typeof ApiOgHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/trpc/$': {
@@ -243,19 +283,12 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  UUsernameRoute: UUsernameRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiAvatarIdRoute: ApiAvatarIdRoute,
+  ApiOgHandleRoute: ApiOgHandleRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

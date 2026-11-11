@@ -86,7 +86,7 @@ export function ProfileEditorPage() {
           ...profileData.profile,
           basics: {
             ...profileData.profile.basics,
-            handle: `cvvd/${pendingHandle}`,
+            handle: `cvvd/u/${pendingHandle}`,
           },
         }
         setForm(initialForm)
@@ -256,16 +256,16 @@ export function ProfileEditorPage() {
               </span>
               {profileHandleTarget ? (
                 <Link
-                  to="/$handle"
-                  params={{ handle: profileHandleTarget }}
+                  to="/u/$username"
+                  params={{ username: profileHandleTarget }}
                   title="View your live profile"
                   className="text-xs font-mono text-[var(--grey2)] hover:text-[var(--grey1)] hover:underline truncate max-w-[140px] sm:max-w-none transition-colors"
                 >
-                  cvvd/{rawHandle || profileHandleTarget}
+                  cvvd/u/{rawHandle || profileHandleTarget}
                 </Link>
               ) : (
                 <span className="text-xs font-mono text-[var(--grey2)] truncate max-w-[140px] sm:max-w-none">
-                  cvvd/{rawHandle || 'you'}
+                  cvvd/u/{rawHandle || 'you'}
                 </span>
               )}
             </div>

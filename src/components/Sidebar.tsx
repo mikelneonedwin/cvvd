@@ -53,9 +53,9 @@ export function Sidebar({
       return
     }
 
-    const cleanHandle = profile.basics.handle.replace(/^cvvd\//, '').trim()
+    const cleanHandle = profile.basics.handle.replace(/^cvvd\/u\//, '').replace(/^cvvd\//, '').replace(/^u\//, '').trim()
     const shareUrl = isEditPage && cleanHandle
-      ? `${window.location.origin}/${cleanHandle}`
+      ? `${window.location.origin}/u/${cleanHandle}`
       : window.location.href
 
     const shareData = {
@@ -378,8 +378,8 @@ export function Sidebar({
         <div className="pt-4 border-t border-[var(--secondaryBorderColor)] flex items-center justify-between gap-2 px-2">
           {profile.basics.handle ? (
             <Link
-              to="/$handle"
-              params={{ handle: profile.basics.handle.replace(/^cvvd\//, '') }}
+              to="/u/$username"
+              params={{ username: profile.basics.handle.replace(/^cvvd\/u\//, '').replace(/^cvvd\//, '').replace(/^u\//, '') }}
               onClick={() => setIsOpenMobile(false)}
               className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden group hover:opacity-80 transition-opacity"
               title={`View ${profile.basics.handle} live profile`}

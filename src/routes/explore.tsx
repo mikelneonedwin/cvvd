@@ -209,8 +209,8 @@ export function ExplorePage() {
             {filteredUsers.map((user) => (
               <Link
                 key={user.handle}
-                to="/$handle"
-                params={{ handle: user.handle }}
+                to="/u/$username"
+                params={{ username: user.handle }}
                 className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/20 hover:bg-[var(--inputBackgroundColor)]/60 hover:border-[var(--grey3)] transition-all group block"
               >
                 <div className="flex items-center gap-3">
@@ -226,7 +226,7 @@ export function ExplorePage() {
                       {user.name}
                     </div>
                     <div className="text-[11px] font-mono text-[var(--grey3)]">
-                      cvvd/{user.handle}
+                      cvvd/u/{user.handle}
                     </div>
                   </div>
                 </div>

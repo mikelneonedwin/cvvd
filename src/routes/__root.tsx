@@ -54,6 +54,8 @@ export const Route = createRootRoute({
         property: 'og:image',
         content: 'https://cvvd.vercel.app/og-image.png',
       },
+      { property: 'og:image:secure_url', content: 'https://cvvd.vercel.app/og-image.png' },
+      { property: 'og:image:type', content: 'image/png' },
       { property: 'og:image:width', content: '1200' },
       { property: 'og:image:height', content: '630' },
       { property: 'og:image:alt', content: 'Cvvd - Living Profiles & Printable CV Engine' },
