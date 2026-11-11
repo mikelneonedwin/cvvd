@@ -172,7 +172,7 @@ export function HomePage() {
           className="mt-8 max-w-md mx-auto flex items-center rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/60 p-1.5 shadow-xs transition-all"
         >
           <span className="pl-3.5 pr-1 text-sm font-mono text-[var(--grey3)] select-none">
-            cvvd/
+            cvvd/u/
           </span>
           <input
             type="text"
@@ -203,8 +203,8 @@ export function HomePage() {
         <div className="mt-4 text-xs text-[var(--grey3)]">
           <span>Free forever. Instant claim. Or </span>
           <Link
-            to="/$handle"
-            params={{ handle: 'mikelneonedwin' }}
+            to="/u/$username"
+            params={{ username: 'mikelneonedwin' }}
             className="font-medium text-[var(--grey1)] underline decoration-[var(--grey3)] underline-offset-4 hover:decoration-[var(--grey1)] transition-colors cursor-pointer"
           >
             explore Winner Edwin&apos;s living CV
@@ -302,10 +302,10 @@ export function HomePage() {
 
             {/* Live Preview Bar */}
             <div className="pt-4 flex items-center justify-between text-xs">
-              <span className="font-mono text-[var(--grey3)]">cvvd/mikelneonedwin</span>
+              <span className="font-mono text-[var(--grey3)]">cvvd/u/mikelneonedwin</span>
               <Link
-                to="/$handle"
-                params={{ handle: 'mikelneonedwin' }}
+                to="/u/$username"
+                params={{ username: 'mikelneonedwin' }}
                 className="inline-flex items-center gap-1 font-medium text-[var(--grey1)] hover:underline"
               >
                 <span>Open live profile</span>
@@ -366,8 +366,8 @@ export function HomePage() {
           {creators.map((creator) => (
             <Link
               key={creator.handle}
-              to="/$handle"
-              params={{ handle: creator.handle }}
+              to="/u/$username"
+              params={{ username: creator.handle }}
               className="p-5 rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/20 hover:bg-[var(--inputBackgroundColor)]/60 hover:border-[var(--grey3)] transition-all group block"
             >
               <div className="flex items-center gap-3">
@@ -383,7 +383,7 @@ export function HomePage() {
                     {creator.name}
                   </div>
                   <div className="text-[11px] font-mono text-[var(--grey3)]">
-                    cvvd/{creator.handle}
+                    cvvd/u/{creator.handle}
                   </div>
                 </div>
               </div>

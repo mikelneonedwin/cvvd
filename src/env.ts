@@ -10,6 +10,16 @@ export const env = createEnv({
     CLOUDINARY_API_SECRET: z.string().min(1),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
+    BASE_URL: z
+      .string()
+      .url()
+      .optional()
+      .transform((val) => {
+        if (val) return val.replace(/\/+$/, '')
+        return process.env.NODE_ENV === 'production'
+          ? 'https://cvvd.vercel.app'
+          : 'http://localhost:3000'
+      }),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

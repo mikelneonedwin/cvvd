@@ -13,7 +13,9 @@ import type { UserProfile } from '../types/profile'
 function sanitizeHandle(raw: string): string {
   return raw
     .toLowerCase()
+    .replace(/^cvvd\/u\//, '')
     .replace(/^cvvd\//, '')
+    .replace(/^u\//, '')
     .replace(/[^a-z0-9_-]/g, '')
     .slice(0, 32)
 }
@@ -36,7 +38,7 @@ export const appRouter = router({
         const fullProfile: UserProfile = {
           basics: {
             name: profileRecord.name,
-            handle: `cvvd/${profileRecord.handle}`,
+            handle: `cvvd/u/${profileRecord.handle}`,
             headline: profileRecord.headline,
             avatarUrl: profileRecord.avatarUrl || initialProfile.basics.avatarUrl,
             status: {
@@ -81,7 +83,7 @@ export const appRouter = router({
         const profile: UserProfile = {
           basics: {
             name: existing.name,
-            handle: `cvvd/${existing.handle}`,
+            handle: `cvvd/u/${existing.handle}`,
             headline: existing.headline,
             avatarUrl: existing.avatarUrl || ctx.user.image || initialProfile.basics.avatarUrl,
             status: {
@@ -148,7 +150,7 @@ export const appRouter = router({
       const profile: UserProfile = {
         basics: {
           name: newProfile.name,
-          handle: `cvvd/${newProfile.handle}`,
+          handle: `cvvd/u/${newProfile.handle}`,
           headline: newProfile.headline || '',
           avatarUrl: newProfile.avatarUrl || '',
           status: {

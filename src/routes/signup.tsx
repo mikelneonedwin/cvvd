@@ -88,7 +88,7 @@ function SignUpPage() {
             </label>
             <div className="flex items-center rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] px-3.5 focus-within:ring-1 focus-within:ring-[var(--grey1)]">
               <span className="text-sm font-mono text-[var(--grey3)] select-none">
-                cvvd/
+                cvvd/u/
               </span>
               <input
                 id="handle"
