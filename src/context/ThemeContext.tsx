@@ -5,6 +5,7 @@ type Theme = 'light' | 'dark' | 'system'
 interface ThemeContextValue {
   theme: Theme
   isDark: boolean
+  mounted: boolean
   setTheme: (theme: Theme) => void
   toggleTheme: () => void
 }
@@ -14,26 +15,53 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 const STORAGE_KEY = 'cvvd_theme_preference'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved === 'light' || saved === 'dark' || saved === 'system') {
-        return saved
-      }
-    }
-    return 'system'
-  })
-
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (theme === 'dark') return true
-    if (theme === 'light') return false
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
-    }
-    return false
-  })
+  const [theme, setTheme] = useState<Theme>('system')
+  const [isDark, setIsDark] = useState<boolean>(false)
+  const [mounted, setMounted] = useState<boolean>(false)
 
   useEffect(() => {
+    setMounted(true)
+    const root = document.documentElement
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const saved = localStorage.getItem(STORAGE_KEY)
+    const initialTheme: Theme =
+      saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system'
+    setTheme(initialTheme)
+
+    const computeDark = (t: Theme) => {
+      if (t === 'dark') return true
+      if (t === 'light') return false
+      return mediaQuery.matches
+    }
+
+    const currentDark = computeDark(initialTheme)
+    setIsDark(currentDark)
+    if (currentDark) {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+
+    const handleChange = () => {
+      const activeSaved = localStorage.getItem(STORAGE_KEY) || 'system'
+      if (activeSaved === 'system') {
+        const nextDark = mediaQuery.matches
+        setIsDark(nextDark)
+        if (nextDark) {
+          root.classList.add('dark')
+        } else {
+          root.classList.remove('dark')
+        }
+      }
+    }
+
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     const root = document.documentElement
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -53,29 +81,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
 
     localStorage.setItem(STORAGE_KEY, theme)
-
-    const handleChange = () => {
-      if (theme === 'system') {
-        const nextDark = mediaQuery.matches
-        setIsDark(nextDark)
-        if (nextDark) {
-          root.classList.add('dark')
-        } else {
-          root.classList.remove('dark')
-        }
-      }
-    }
-
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [theme])
+  }, [theme, mounted])
 
   const toggleTheme = () => {
     setTheme(isDark ? 'light' : 'dark')
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, isDark, mounted, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   )

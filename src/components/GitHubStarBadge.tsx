@@ -8,6 +8,34 @@ interface GitHubStarBadgeProps {
   className?: string
 }
 
+export async function fetchGitHubStars(owner: string, repo: string): Promise<number | null> {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`)
+    if (res.ok) {
+      const data = await res.json()
+      if (typeof data.stargazers_count === 'number') {
+        return data.stargazers_count
+      }
+    }
+  } catch {
+    // Fall back to ungh proxy
+  }
+
+  try {
+    const fallbackRes = await fetch(`https://ungh.cc/repos/${owner}/${repo}`)
+    if (fallbackRes.ok) {
+      const data = await fallbackRes.json()
+      if (typeof data?.repo?.stars === 'number') {
+        return data.repo.stars
+      }
+    }
+  } catch {
+    // Both failed
+  }
+
+  return null
+}
+
 export function GitHubStarBadge({ url, className = '' }: GitHubStarBadgeProps) {
   const repoInfo = parseGitHubRepo(url)
 
@@ -15,19 +43,7 @@ export function GitHubStarBadge({ url, className = '' }: GitHubStarBadgeProps) {
     queryKey: ['github-stars', repoInfo?.owner, repoInfo?.repo],
     queryFn: async () => {
       if (!repoInfo) return null
-      try {
-        const res = await fetch(
-          `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}`
-        )
-        if (!res.ok) return null
-        const data = await res.json()
-        if (typeof data.stargazers_count === 'number') {
-          return data.stargazers_count
-        }
-        return null
-      } catch {
-        return null
-      }
+      return fetchGitHubStars(repoInfo.owner, repoInfo.repo)
     },
     enabled: !!repoInfo,
     staleTime: 1000 * 60 * 30, // 30 minutes cache
@@ -46,7 +62,7 @@ export function GitHubStarBadge({ url, className = '' }: GitHubStarBadgeProps) {
     >
       <GitHubIcon className="w-3 h-3 text-[var(--grey3)]" />
       <span className="inline-flex items-center gap-0.5">
-        <Star className="w-2.5 h-2.5 fill-amber-400/80 text-amber-500" />
+        <Star className="w-2.5 h-2.5 fill-current text-current opacity-80" />
         <span>{formatStarCount(starCount)}</span>
       </span>
     </span>

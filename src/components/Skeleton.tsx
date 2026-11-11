@@ -31,25 +31,6 @@ export function ProfileSkeleton() {
             </div>
           </div>
 
-          {/* On this page links */}
-          <div className="space-y-2 pt-2">
-            <Skeleton className="w-20 h-2.5 rounded ml-2" />
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-3 px-2 py-1.5">
-                <Skeleton className="w-4 h-4 rounded" />
-                <Skeleton className="w-20 h-3 rounded" />
-              </div>
-              <div className="flex items-center gap-3 px-2 py-1.5">
-                <Skeleton className="w-4 h-4 rounded" />
-                <Skeleton className="w-20 h-3 rounded" />
-              </div>
-              <div className="flex items-center gap-3 px-2 py-1.5">
-                <Skeleton className="w-4 h-4 rounded" />
-                <Skeleton className="w-16 h-3 rounded" />
-              </div>
-            </div>
-          </div>
-
           <div className="pt-2 border-t border-[var(--secondaryBorderColor)]" />
 
           {/* CV Controls */}

@@ -40,7 +40,7 @@ export function ProfileHero() {
           <div className="readcv-badges flex flex-col items-start gap-1.5 mt-3 w-full">
             {basics.status.label && (
               <div
-                className="readcv-badge cursor-default text-[12px] py-1 px-2.5 max-w-full"
+                className="readcv-badge readcv-status-badge cursor-default text-[12px] py-1 px-2.5 max-w-full"
                 aria-label={`Status: ${basics.status.label}`}
               >
                 <SupporterHeartIcon className="w-3 h-3 text-red-500 dark:text-red-400 shrink-0" />
@@ -109,7 +109,7 @@ export function ProfileHero() {
         <div className="readcv-badges flex flex-wrap items-center gap-1.5 sm:max-w-[320px] sm:justify-end">
           {basics.status.label && (
             <div
-              className="readcv-badge cursor-default text-[12px]"
+              className="readcv-badge readcv-status-badge cursor-default text-[12px]"
               aria-label={`Status: ${basics.status.label}`}
             >
               <SupporterHeartIcon className="w-3 h-3 text-red-500 dark:text-red-400 shrink-0" />
@@ -174,7 +174,7 @@ export function ProfileHero() {
         <div className="readcv-badges flex flex-wrap items-center gap-1.5 mt-2.5">
           {basics.status.label && (
             <div
-              className="readcv-badge cursor-default"
+              className="readcv-badge readcv-status-badge cursor-default"
               aria-label={`Status: ${basics.status.label}`}
             >
               <SupporterHeartIcon className="w-3 h-3 text-red-500 dark:text-red-400" />

@@ -33,5 +33,6 @@ export const initialProfile: UserProfile = {
     layoutPreset: 'editorial',
     showAvatarInPrint: true,
     includeLinksInPrint: true,
+    printTheme: 'light',
   },
 }

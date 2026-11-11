@@ -15,13 +15,14 @@ export function CVProfile() {
   const densityClass =
     printSettings.density === 'compact' ? 'print-density-compact' : ''
   const avatarClass = printSettings.showAvatarInPrint ? 'print-avatar-enabled' : ''
+  const themeClass = printSettings.printTheme === 'dark' ? 'print-theme-dark' : ''
   const presetClass = `layout-${preset}`
 
   if (preset === 'balanced') {
     return (
       <main className="w-full flex justify-center py-10 sm:py-14 px-4 sm:px-8">
         <div
-          className={`readcv-container ${presetClass} w-full max-w-[840px] grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 md:gap-14 items-start ${densityClass} ${avatarClass}`}
+          className={`readcv-container ${presetClass} w-full max-w-[840px] grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 md:gap-14 items-start ${densityClass} ${avatarClass} ${themeClass}`}
         >
           <div className="space-y-8 readcv-left-column w-full">
             <ProfileHero />
@@ -43,7 +44,7 @@ export function CVProfile() {
     return (
       <main className="w-full flex justify-center py-10 sm:py-14 px-4 sm:px-8">
         <div
-          className={`readcv-container ${presetClass} w-full max-w-[680px] ${densityClass} ${avatarClass}`}
+          className={`readcv-container ${presetClass} w-full max-w-[680px] ${densityClass} ${avatarClass} ${themeClass}`}
         >
           <ProfileHero />
           <div className="readcv-sections-container space-y-8 w-full">
@@ -62,7 +63,7 @@ export function CVProfile() {
   return (
     <main className="w-full flex justify-center py-10 sm:py-14 px-4 sm:px-8">
       <div
-        className={`readcv-container ${presetClass} w-full max-w-[540px] ${densityClass} ${avatarClass}`}
+        className={`readcv-container ${presetClass} w-full max-w-[540px] ${densityClass} ${avatarClass} ${themeClass}`}
       >
         <ProfileHero />
         <div className="readcv-sections-container">

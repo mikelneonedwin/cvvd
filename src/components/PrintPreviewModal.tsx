@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Printer, X, SlidersHorizontal } from 'lucide-react'
+import { Printer, X, SlidersHorizontal, Sun, Moon } from 'lucide-react'
 import { useProfile } from '../context/ProfileContext'
 import type { LayoutPreset } from '../types/profile'
 
@@ -41,6 +41,7 @@ export function PrintPreviewModal() {
 
   const preset = printSettings.layoutPreset || 'editorial'
   const isCompact = printSettings.density === 'compact'
+  const isDarkDoc = printSettings.printTheme === 'dark'
 
   const toggleSection = (key: keyof typeof sectionVisibility) => {
     const next = !sectionVisibility[key]
@@ -62,6 +63,12 @@ export function PrintPreviewModal() {
   const setLayoutPreset = (newPreset: LayoutPreset, name: string) => {
     updatePrintSettings({ layoutPreset: newPreset })
     showToast(`Layout changed to ${name}`)
+  }
+
+  const togglePrintTheme = () => {
+    const next = printSettings.printTheme === 'dark' ? 'light' : 'dark'
+    updatePrintSettings({ printTheme: next })
+    showToast(`Print mode: ${next} theme`)
   }
 
   const sectionsList: Array<{
@@ -108,51 +115,53 @@ export function PrintPreviewModal() {
     >
       <div className="relative w-full max-w-[620px] h-[90vh] max-h-[760px] bg-[var(--backgroundColor)] border border-[var(--primaryBorderColor)] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="px-6 sm:px-8 pt-6 pb-4 flex items-center justify-between border-b border-[var(--transparentBorder)]">
-          <div>
-            <h2 className="text-[20px] font-normal text-[var(--grey1)] leading-tight">
-              Print Profile
-            </h2>
-            <p className="text-[12px] text-[var(--grey3)] mt-0.5">
-              Configure layout style, printed sections, and document options
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* View Mode Switch */}
-            <div className="flex items-center bg-[var(--inputBackgroundColor)] p-0.5 rounded-lg text-[12px]">
-              <button
-                type="button"
-                onClick={() => setActiveTab('settings')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  activeTab === 'settings'
-                    ? 'bg-[var(--backgroundColor)] text-[var(--grey1)] shadow-xs font-medium'
-                    : 'text-[var(--grey2)] hover:text-[var(--grey1)]'
-                }`}
-              >
-                Settings
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('preview')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  activeTab === 'preview'
-                    ? 'bg-[var(--backgroundColor)] text-[var(--grey1)] shadow-xs font-medium'
-                    : 'text-[var(--grey2)] hover:text-[var(--grey1)]'
-                }`}
-              >
-                Preview
-              </button>
+        <div className="px-5 sm:px-8 pt-5 sm:pt-6 pb-4 border-b border-[var(--transparentBorder)]">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-[18px] sm:text-[20px] font-normal text-[var(--grey1)] leading-tight">
+                Print Profile
+              </h2>
+              <p className="text-[11px] sm:text-[12px] text-[var(--grey3)] mt-0.5 leading-snug">
+                Configure layout style, printed sections, and document options
+              </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setIsPreviewingPrint(false)}
-              aria-label="Close dialog"
-              className="p-1.5 rounded-lg text-[var(--grey3)] hover:text-[var(--grey1)] hover:bg-[var(--transparentBorder)] transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              {/* View Mode Switch */}
+              <div className="flex items-center bg-[var(--inputBackgroundColor)] p-1 rounded-xl border border-[var(--secondaryBorderColor)] text-[12px]">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('settings')}
+                  className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                    activeTab === 'settings'
+                      ? 'bg-[var(--backgroundColor)] text-[var(--grey1)] shadow-2xs font-medium'
+                      : 'text-[var(--grey3)] hover:text-[var(--grey1)]'
+                  }`}
+                >
+                  Settings
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('preview')}
+                  className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                    activeTab === 'preview'
+                      ? 'bg-[var(--backgroundColor)] text-[var(--grey1)] shadow-2xs font-medium'
+                      : 'text-[var(--grey3)] hover:text-[var(--grey1)]'
+                  }`}
+                >
+                  Preview
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsPreviewingPrint(false)}
+                aria-label="Close dialog"
+                className="p-1.5 rounded-lg text-[var(--grey3)] hover:text-[var(--grey1)] hover:bg-[var(--transparentBorder)] transition-colors cursor-pointer shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -293,8 +302,8 @@ export function PrintPreviewModal() {
                   </div>
 
                   {/* Print Density */}
-                  <div className="py-3 flex items-center justify-between">
-                    <div>
+                  <div className="py-3 flex items-center justify-between gap-4">
+                    <div className="min-w-0 pr-2">
                       <div className="text-[14px] text-[var(--grey1)]">Print density</div>
                       <div className="text-[12px] text-[var(--grey3)]">
                         {isCompact ? 'Compact typography and tight spacing' : 'Comfortable typography'}
@@ -304,10 +313,38 @@ export function PrintPreviewModal() {
                     <button
                       type="button"
                       onClick={toggleDensity}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--grey1)] bg-[var(--inputBackgroundColor)] hover:bg-[var(--grey4)] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--grey1)] bg-[var(--inputBackgroundColor)] hover:bg-[var(--grey4)] transition-colors cursor-pointer shrink-0 whitespace-nowrap"
                     >
-                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                      <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
                       <span className="capitalize">{printSettings.density}</span>
+                    </button>
+                  </div>
+
+                  {/* Print Color Theme: Light / Dark Mode */}
+                  <div className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-t border-[var(--secondaryBorderColor)]">
+                    <div className="min-w-0 pr-2">
+                      <div className="text-[14px] text-[var(--grey1)]">Print color theme</div>
+                      <div className="text-[12px] text-[var(--grey3)]">
+                        Export as an authentic dark sheet or traditional light CV.
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={togglePrintTheme}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--grey1)] bg-[var(--inputBackgroundColor)] hover:bg-[var(--grey4)] transition-colors cursor-pointer self-start sm:self-auto shrink-0 whitespace-nowrap"
+                    >
+                      {printSettings.printTheme === 'dark' ? (
+                        <>
+                          <Moon className="w-3.5 h-3.5 text-neutral-300 shrink-0" />
+                          <span>Dark mode</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sun className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                          <span>Light mode</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -316,21 +353,27 @@ export function PrintPreviewModal() {
           ) : (
             /* Document Page Layout Preview */
             <div className="flex flex-col items-center">
-              <div className="w-full bg-white text-black p-6 sm:p-8 rounded-lg shadow-md border border-neutral-200 text-[11px] leading-relaxed relative">
+              <div
+                className={`w-full p-6 sm:p-8 rounded-lg shadow-md border text-[11px] leading-relaxed relative transition-colors ${
+                  printSettings.printTheme === 'dark'
+                    ? 'bg-[#111111] text-white border-neutral-800'
+                    : 'bg-white text-black border-neutral-200'
+                }`}
+              >
                 {/* Single Column Layout Preview */}
                 {preset === 'single-column' && (
                   <div className="space-y-5">
                     {/* Masthead */}
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <h1 className="text-[16px] font-medium text-black leading-tight">
+                        <h1 className={`text-[16px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}>
                           {basics.name}
                         </h1>
-                        <p className="text-[11px] text-neutral-600 leading-normal mt-0.5">
+                        <p className={`text-[11px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal mt-0.5`}>
                           {basics.headline}
                           {basics.location && <span> in {basics.location}</span>}
                         </p>
-                        <div className="flex flex-wrap items-center gap-2 pt-2 text-[10px] text-neutral-700">
+                        <div className={`flex flex-wrap items-center gap-2 pt-2 text-[10px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>
                           {basics.links.map((link) => (
                             <span key={link.id}>{link.label}</span>
                           ))}
@@ -351,10 +394,10 @@ export function PrintPreviewModal() {
                     {/* Sections */}
                     {sectionVisibility.about && basics.summary && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black mb-1">
+                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                           About
                         </h2>
-                        <p className="text-neutral-700 text-[10px] leading-relaxed">
+                        <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[10px] leading-relaxed`}>
                           {basics.summary}
                         </p>
                       </div>
@@ -362,14 +405,14 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.experience && experience.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black mb-1">
+                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                           Work experience
                         </h2>
                         <div className="space-y-3">
                           {experience.map((item) => (
                             <div key={item.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className="font-medium text-black">
+                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
                                   {item.role} <span className="font-normal text-neutral-400">at</span> {item.company}
                                   {item.location && <span className="text-neutral-500 font-normal"> · {item.location}</span>}
                                 </div>
@@ -377,7 +420,7 @@ export function PrintPreviewModal() {
                                   {item.startDate} - {item.isCurrent ? 'Now' : item.endDate}
                                 </div>
                               </div>
-                              {item.summary && <p className="text-neutral-700 mt-0.5 leading-normal">{item.summary}</p>}
+                              {item.summary && <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}>{item.summary}</p>}
                             </div>
                           ))}
                         </div>
@@ -386,14 +429,14 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.projects && projects.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black mb-1">
+                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                           Projects
                         </h2>
                         <div className="space-y-2">
                           {projects.map((proj) => (
                             <div key={proj.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className="font-medium text-black">
+                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
                                   {proj.title}
                                   {proj.company && (
                                     <span className="text-neutral-500 font-normal ml-1">
@@ -403,7 +446,7 @@ export function PrintPreviewModal() {
                                 </div>
                                 <div className="text-neutral-500 font-mono text-[9.5px]">{proj.year}</div>
                               </div>
-                              {proj.description && <p className="text-neutral-700 mt-0.5">{proj.description}</p>}
+                              {proj.description && <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5`}>{proj.description}</p>}
                             </div>
                           ))}
                         </div>
@@ -412,14 +455,14 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.writing && writing.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black mb-1">
+                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                           Writing
                         </h2>
                         <div className="space-y-2">
                           {writing.map((w) => (
                             <div key={w.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className="font-medium text-black">{w.title}</div>
+                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{w.title}</div>
                                 <div className="text-neutral-500 font-mono text-[9.5px]">{w.year}</div>
                               </div>
                               {w.publication && <div className="text-neutral-500 text-[9px]">{w.publication}</div>}
@@ -431,14 +474,14 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.education && education.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black mb-1">
+                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                           Education
                         </h2>
                         <div className="space-y-2">
                           {education.map((edu) => (
                             <div key={edu.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className="font-medium text-black">{edu.degree} at {edu.institution}</div>
+                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{edu.degree} at {edu.institution}</div>
                                 <div className="text-neutral-500 font-mono text-[9.5px]">{edu.startYear} - {edu.endYear}</div>
                               </div>
                               {edu.field && <div className="text-neutral-500 text-[9px]">{edu.field}</div>}
@@ -450,14 +493,14 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.skills && skillCategories.length > 0 && (
                       <div>
-                        <h2 className="text-[11px] font-medium text-black mb-1">
+                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                           Skills
                         </h2>
                         <div className="space-y-1 text-[10px]">
                           {skillCategories.map((cat) => (
                             <div key={cat.id}>
-                              <span className="font-medium text-black mr-2">{cat.name}:</span>
-                              <span className="text-neutral-700">{cat.skills.join(', ')}</span>
+                              <span className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mr-2`}>{cat.name}:</span>
+                              <span className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>{cat.skills.join(', ')}</span>
                             </div>
                           ))}
                         </div>
@@ -481,15 +524,15 @@ export function PrintPreviewModal() {
                         </div>
                       )}
                       <div>
-                        <h1 className="text-[13px] font-medium text-black leading-tight">
+                        <h1 className={`text-[13px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}>
                           {basics.name}
                         </h1>
-                        <p className="text-[9.5px] text-neutral-600 leading-normal mt-0.5">
+                        <p className={`text-[9.5px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal mt-0.5`}>
                           {basics.headline}
                         </p>
                       </div>
 
-                      <div className="space-y-1 text-[9px] text-neutral-700">
+                      <div className={`space-y-1 text-[9px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>
                         {basics.links.map((link) => (
                           <div key={link.id} className="truncate">
                             <span>{link.label}</span>
@@ -499,13 +542,13 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.education && education.length > 0 && (
                         <div className="pt-2">
-                          <h2 className="text-[10px] font-medium text-black mb-1">
+                          <h2 className={`text-[10px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                             Education
                           </h2>
                           <div className="space-y-2 text-[9px]">
                             {education.map((edu) => (
                               <div key={edu.id}>
-                                <div className="font-medium text-black">{edu.degree}</div>
+                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{edu.degree}</div>
                                 <div className="text-neutral-500">{edu.institution}</div>
                                 <div className="text-neutral-400 font-mono">{edu.startYear} - {edu.endYear}</div>
                               </div>
@@ -516,14 +559,14 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.skills && skillCategories.length > 0 && (
                         <div className="pt-2">
-                          <h2 className="text-[10px] font-medium text-black mb-1">
+                          <h2 className={`text-[10px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                             Skills
                           </h2>
                           <div className="space-y-1.5 text-[9px]">
                             {skillCategories.map((cat) => (
                               <div key={cat.id}>
-                                <div className="font-medium text-black">{cat.name}</div>
-                                <div className="text-neutral-600 leading-normal">{cat.skills.join(', ')}</div>
+                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{cat.name}</div>
+                                <div className={`${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal`}>{cat.skills.join(', ')}</div>
                               </div>
                             ))}
                           </div>
@@ -535,8 +578,8 @@ export function PrintPreviewModal() {
                     <div className="space-y-4">
                       {sectionVisibility.about && basics.summary && (
                         <div>
-                          <h2 className="text-[10.5px] font-medium text-black mb-1">About</h2>
-                          <p className="text-neutral-700 text-[9.5px] leading-relaxed">
+                          <h2 className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>About</h2>
+                          <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[9.5px] leading-relaxed`}>
                             {basics.summary}
                           </p>
                         </div>
@@ -544,18 +587,18 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.experience && experience.length > 0 && (
                         <div>
-                          <h2 className="text-[10.5px] font-medium text-black mb-1">Work experience</h2>
+                          <h2 className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>Work experience</h2>
                           <div className="space-y-2.5">
                             {experience.map((item) => (
                               <div key={item.id} className="text-[9.5px]">
                                 <div className="flex justify-between items-baseline">
-                                  <div className="font-medium text-black">{item.role}</div>
+                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{item.role}</div>
                                   <div className="text-neutral-400 font-mono text-[8.5px]">
                                     {item.startDate} - {item.isCurrent ? 'Now' : item.endDate}
                                   </div>
                                 </div>
                                 <div className="text-neutral-500">{item.company}</div>
-                                {item.summary && <p className="text-neutral-700 mt-0.5 leading-normal">{item.summary}</p>}
+                                {item.summary && <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}>{item.summary}</p>}
                               </div>
                             ))}
                           </div>
@@ -564,12 +607,12 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.projects && projects.length > 0 && (
                         <div>
-                          <h2 className="text-[10.5px] font-medium text-black mb-1">Projects</h2>
+                          <h2 className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>Projects</h2>
                           <div className="space-y-2 text-[9.5px]">
                             {projects.map((proj) => (
                               <div key={proj.id}>
                                 <div className="flex justify-between items-baseline">
-                                  <div className="font-medium text-black">
+                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
                                     {proj.title}
                                     {proj.company && (
                                       <span className="text-neutral-500 font-normal ml-1">
@@ -579,7 +622,7 @@ export function PrintPreviewModal() {
                                   </div>
                                   <div className="text-neutral-400 font-mono text-[8.5px]">{proj.year}</div>
                                 </div>
-                                {proj.description && <p className="text-neutral-700 mt-0.5">{proj.description}</p>}
+                                {proj.description && <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5`}>{proj.description}</p>}
                               </div>
                             ))}
                           </div>
@@ -588,12 +631,12 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.writing && writing.length > 0 && (
                         <div>
-                          <h2 className="text-[10.5px] font-medium text-black mb-1">Writing</h2>
+                          <h2 className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>Writing</h2>
                           <div className="space-y-2 text-[9.5px]">
                             {writing.map((w) => (
                               <div key={w.id}>
                                 <div className="flex justify-between items-baseline">
-                                  <div className="font-medium text-black">{w.title}</div>
+                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{w.title}</div>
                                   <div className="text-neutral-400 font-mono text-[8.5px]">{w.year}</div>
                                 </div>
                                 {w.publication && <div className="text-neutral-500 text-[8.5px]">{w.publication}</div>}
@@ -620,14 +663,14 @@ export function PrintPreviewModal() {
                           />
                         </div>
                       )}
-                      <h1 className="text-[13px] font-medium text-black leading-tight">
+                      <h1 className={`text-[13px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}>
                         {basics.name}
                       </h1>
-                      <p className="text-[10px] text-neutral-600 leading-normal">
+                      <p className={`text-[10px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal`}>
                         {basics.headline}
                         {basics.location && <span> in {basics.location}</span>}
                       </p>
-                      <div className="pt-2 space-y-1 text-[9.5px] text-neutral-700">
+                      <div className={`pt-2 space-y-1 text-[9.5px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>
                         {basics.links.map((link) => (
                           <div key={link.id} className="truncate">
                             <span>{link.label}</span>
@@ -641,10 +684,10 @@ export function PrintPreviewModal() {
                       {/* About */}
                       {sectionVisibility.about && basics.summary && (
                         <div>
-                          <h2 className="text-[11px] font-medium text-black mb-1">
+                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                             About
                           </h2>
-                          <p className="text-neutral-700 text-[10px] leading-relaxed">
+                          <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[10px] leading-relaxed`}>
                             {basics.summary}
                           </p>
                         </div>
@@ -653,7 +696,7 @@ export function PrintPreviewModal() {
                       {/* Work Experience */}
                       {sectionVisibility.experience && experience.length > 0 && (
                         <div>
-                          <h2 className="text-[11px] font-medium text-black mb-1">
+                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                             Work experience
                           </h2>
                           <div className="space-y-3">
@@ -663,7 +706,7 @@ export function PrintPreviewModal() {
                                   {item.startDate} - {item.isCurrent ? 'Now' : item.endDate}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="font-medium text-black">
+                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
                                     {item.role}{' '}
                                     <span className="text-neutral-400 font-normal">at</span>{' '}
                                     {item.company}
@@ -674,7 +717,7 @@ export function PrintPreviewModal() {
                                     </div>
                                   )}
                                   {item.summary && (
-                                    <p className="text-neutral-700 mt-0.5 leading-normal">
+                                    <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}>
                                       {item.summary}
                                     </p>
                                   )}
@@ -688,7 +731,7 @@ export function PrintPreviewModal() {
                       {/* Projects */}
                       {sectionVisibility.projects && projects.length > 0 && (
                         <div>
-                          <h2 className="text-[11px] font-medium text-black mb-1">
+                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                             Projects
                           </h2>
                           <div className="space-y-2">
@@ -698,7 +741,7 @@ export function PrintPreviewModal() {
                                   {proj.year}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="font-medium text-black">
+                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
                                     {proj.title}
                                     {proj.company && (
                                       <span className="text-neutral-500 font-normal ml-1">
@@ -707,7 +750,7 @@ export function PrintPreviewModal() {
                                     )}
                                   </div>
                                   {proj.description && (
-                                    <p className="text-neutral-700 mt-0.5 leading-normal">
+                                    <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}>
                                       {proj.description}
                                     </p>
                                   )}
@@ -721,7 +764,7 @@ export function PrintPreviewModal() {
                       {/* Writing */}
                       {sectionVisibility.writing && writing.length > 0 && (
                         <div>
-                          <h2 className="text-[11px] font-medium text-black mb-1">
+                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                             Writing
                           </h2>
                           <div className="space-y-1.5">
@@ -731,7 +774,7 @@ export function PrintPreviewModal() {
                                   {w.year}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="font-medium text-black">{w.title}</div>
+                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{w.title}</div>
                                   {w.publication && (
                                     <div className="text-neutral-500 text-[9px]">
                                       {w.publication}
@@ -747,7 +790,7 @@ export function PrintPreviewModal() {
                       {/* Education */}
                       {sectionVisibility.education && education.length > 0 && (
                         <div>
-                          <h2 className="text-[11px] font-medium text-black mb-1">
+                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                             Education
                           </h2>
                           <div className="space-y-2">
@@ -757,7 +800,7 @@ export function PrintPreviewModal() {
                                   {edu.startYear} - {edu.endYear}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="font-medium text-black">
+                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
                                     {edu.degree}{' '}
                                     <span className="text-neutral-400 font-normal">at</span>{' '}
                                     {edu.institution}
@@ -777,7 +820,7 @@ export function PrintPreviewModal() {
                       {/* Skills */}
                       {sectionVisibility.skills && skillCategories.length > 0 && (
                         <div>
-                          <h2 className="text-[11px] font-medium text-black mb-1">
+                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
                             Skills
                           </h2>
                           <div className="space-y-1">
@@ -786,7 +829,7 @@ export function PrintPreviewModal() {
                                 <div className="w-16 shrink-0 text-right pr-3 text-neutral-500 font-mono text-[9px] pt-0.5">
                                   {cat.name}
                                 </div>
-                                <div className="flex-1 text-neutral-700">
+                                <div className={`flex-1 ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>
                                   {cat.skills.join(', ')}
                                 </div>
                               </div>
@@ -808,11 +851,11 @@ export function PrintPreviewModal() {
             <span>Press Esc to close</span>
           </div>
 
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
             <button
               type="button"
               onClick={() => setIsPreviewingPrint(false)}
-              className="px-4 py-2 rounded-lg text-[13px] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--transparentBorder)] transition-colors"
+              className="px-3.5 py-2 rounded-lg text-[13px] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--transparentBorder)] transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -822,10 +865,10 @@ export function PrintPreviewModal() {
               onClick={() => {
                 triggerPrint()
               }}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-[13px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-colors shadow-sm cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>Print</span>
+              <span>Print sheet</span>
             </button>
           </div>
         </div>

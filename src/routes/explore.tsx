@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Search, ArrowLeft, Sun, Moon } from 'lucide-react'
-import { CvvdLogo } from '../components/CvvdIcons'
+import { Search, Sun, Moon, X, Command, Star, SlidersHorizontal } from 'lucide-react'
+import { CvvdLogo, GitHubIcon } from '../components/CvvdIcons'
+import { fetchGitHubStars } from '../components/GitHubStarBadge'
+import { formatStarCount } from '../lib/github'
 import { trpc } from '../trpc/client'
 import { useSession } from '../lib/auth-client'
 import { useTheme } from '../context/ThemeContext'
@@ -11,24 +13,46 @@ import { Skeleton } from '../components/Skeleton'
 export const Route = createFileRoute('/explore')({
   head: () => ({
     meta: [
-      { title: 'Explore Creators - Cvvd' },
-      { name: 'description', content: 'Browse all creators, designers, and engineers on Cvvd.' },
-      { property: 'og:title', content: 'Explore Creators - Cvvd' },
-      { property: 'og:description', content: 'Browse all creators, designers, and engineers on Cvvd.' },
+      { title: 'People - Cvvd' },
+      { name: 'description', content: 'Browse people, engineers, and designers on Cvvd.' },
+      { property: 'og:title', content: 'People - Cvvd' },
+      { property: 'og:description', content: 'Browse people, engineers, and designers on Cvvd.' },
       { property: 'og:url', content: 'https://cvvd.vercel.app/explore' },
     ],
   }),
   component: ExplorePage,
 })
 
-function ExplorePage() {
+export function ExplorePage() {
   const { data: session } = useSession()
-  const { isDark, toggleTheme } = useTheme()
+  const { isDark, mounted, toggleTheme } = useTheme()
   const [searchQuery, setSearchQuery] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      } else if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
+        searchInputRef.current?.blur()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   const { data: allUsers, isLoading } = useQuery(
     trpc.profile.listAll.queryOptions()
   )
+
+  const { data: cvvdStars } = useQuery({
+    queryKey: ['github-stars', 'mikelneonedwin', 'cvvd'],
+    queryFn: () => fetchGitHubStars('mikelneonedwin', 'cvvd'),
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+    retry: false,
+  })
 
   const users = allUsers || []
   const filteredUsers = users.filter((u) => {
@@ -42,13 +66,15 @@ function ExplorePage() {
     )
   })
 
+  const brandHomeLink = session?.user ? '/home' : '/'
+
   return (
     <div className="min-h-screen bg-[var(--backgroundColor)] text-[var(--grey1)] selection:bg-[var(--grey2)] selection:text-[var(--backgroundColor)] transition-colors duration-200">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)]/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2.5 group">
+            <Link to={brandHomeLink} className="flex items-center gap-2.5 group">
               <div className="text-[var(--grey1)] transition-transform group-hover:scale-105">
                 <CvvdLogo className="w-7 h-7" />
               </div>
@@ -56,33 +82,48 @@ function ExplorePage() {
                 Cvvd
               </span>
             </Link>
-            <div className="h-4 w-px bg-[var(--secondaryBorderColor)] hidden sm:block" />
-            <span className="text-xs font-mono text-[var(--grey3)] hidden sm:inline">
-              Explore
-            </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="https://github.com/mikelneonedwin/cvvd"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="View source on GitHub"
+              className="group px-2.5 py-1.5 rounded-xl border border-[var(--secondaryBorderColor)] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--inputBackgroundColor)] transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer text-xs font-mono"
+            >
+              <GitHubIcon className="w-4 h-4 shrink-0 text-current" />
+              {typeof cvvdStars === 'number' && (
+                <span className="flex items-center gap-1 text-[11px] text-[var(--grey3)] group-hover:text-[var(--grey1)] font-medium pl-0.5 border-l border-[var(--secondaryBorderColor)]">
+                  <Star className="w-3 h-3 fill-current text-current shrink-0 opacity-80" />
+                  <span>{formatStarCount(cvvdStars)}</span>
+                </span>
+              )}
+            </a>
+
             <button
               type="button"
               onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="p-2 rounded-xl border border-[var(--secondaryBorderColor)] text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-850 transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+              aria-label={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="p-2 rounded-xl border border-[var(--secondaryBorderColor)] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--inputBackgroundColor)] transition-colors flex items-center justify-center shrink-0 cursor-pointer"
             >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {mounted && isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
             {session?.user ? (
               <Link
                 to="/edit"
-                className="btn-primary px-3.5 py-1.5 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shrink-0 shadow-2xs"
+                title="Profile Studio"
+                aria-label="Profile Studio"
+                className="btn-primary p-2 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shrink-0 shadow-2xs inline-flex items-center justify-center gap-1.5"
               >
-                Profile Studio
+                <SlidersHorizontal className="w-4 h-4 sm:hidden shrink-0" />
+                <span className="hidden sm:inline">Profile Studio</span>
               </Link>
             ) : (
               <Link
                 to="/signup"
-                className="btn-primary px-3.5 py-1.5 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shrink-0 shadow-2xs"
+                className="btn-primary px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-medium hover:opacity-90 transition-opacity shrink-0 shadow-2xs inline-flex items-center"
               >
                 Try it
               </Link>
@@ -95,31 +136,41 @@ function ExplorePage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--grey3)] hover:text-[var(--grey1)] mb-3 transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back home</span>
-            </Link>
             <h1 className="text-2xl sm:text-3xl font-normal tracking-tight text-[var(--grey1)]">
-              People who build on Cvvd
+              Profiles on Cvvd
             </h1>
             <p className="mt-1 text-xs text-[var(--grey3)]">
-              Explore profiles, portfolios, and publication-grade CVs across the platform.
+              Browse living CVs, portfolios, and printable sheets across the community.
             </p>
           </div>
 
           {/* Search Input */}
-          <div className="w-full sm:w-72 relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--grey3)] pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, role, or city..."
-              className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/50 text-xs text-[var(--grey1)] placeholder:text-[var(--grey3)] focus:outline-none focus:ring-1 focus:ring-[var(--grey1)] transition-colors"
-            />
+          <div className="w-full sm:w-80 relative group">
+            <div className="flex items-center w-full px-3 py-2 rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/40 hover:bg-[var(--inputBackgroundColor)]/70 focus-within:bg-[var(--backgroundColor)] focus-within:border-[var(--grey1)] focus-within:ring-1 focus-within:ring-[var(--grey1)] transition-all shadow-xs">
+              <Search className="w-4 h-4 text-[var(--grey3)] group-focus-within:text-[var(--grey1)] transition-colors shrink-0 mr-2.5" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Filter by name, handle, role, or city..."
+                className="w-full bg-transparent text-xs text-[var(--grey1)] placeholder:text-[var(--grey3)] focus:outline-none border-none p-0 leading-tight"
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
+                  className="p-1 rounded-md text-[var(--grey3)] hover:text-[var(--grey1)] transition-colors cursor-pointer shrink-0 ml-1.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono text-[var(--grey3)] bg-[var(--inputBackgroundColor)] border border-[var(--secondaryBorderColor)] shrink-0 ml-1.5 select-none pointer-events-none">
+                  <Command className="w-2.5 h-2.5" />K
+                </kbd>
+              )}
+            </div>
           </div>
         </div>
 
