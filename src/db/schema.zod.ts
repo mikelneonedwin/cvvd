@@ -121,6 +121,7 @@ export const printSettingsSchema = z.object({
   showAvatarInPrint: z.boolean(),
   includeLinksInPrint: z.boolean(),
   layoutPreset: layoutPresetSchema,
+  printTheme: z.enum(['light', 'dark']).optional(),
 })
 
 export const profileBasicsSchema = z.object({

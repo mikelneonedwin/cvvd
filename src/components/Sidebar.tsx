@@ -13,9 +13,6 @@ import {
 import { CvvdLogo } from './CvvdIcons'
 import {
   ExploreIcon,
-  OpenRolesIcon,
-  SearchIcon,
-  PostsIcon,
   SidebarToggleIcon,
 } from './ReadCvIcons'
 import { useProfile } from '../context/ProfileContext'
@@ -47,7 +44,7 @@ export function Sidebar({
     updatePrintSettings,
     showToast,
   } = useProfile()
-  const { isDark, toggleTheme } = useTheme()
+  const { isDark, mounted, toggleTheme } = useTheme()
   const [isOpenMobile, setIsOpenMobile] = useState(false)
 
   const handleShare = async () => {
@@ -85,19 +82,6 @@ export function Sidebar({
     }
   }
 
-  const scrollToSection = (id: string, fallbackQuery = '.readcv-container') => {
-    const el = document.getElementById(id) || document.querySelector(fallbackQuery)
-    if (!el) return
-    const headerOffset = 56
-    const elementPosition = el.getBoundingClientRect().top
-    const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-    window.scrollTo({
-      top: Math.max(0, offsetPosition),
-      behavior: 'smooth',
-    })
-    setIsOpenMobile(false)
-  }
-
   return (
     <>
       {/* Mobile Floating Toggle Button */}
@@ -107,9 +91,33 @@ export function Sidebar({
           onClick={() => setIsOpenMobile(!isOpenMobile)}
           aria-label="Toggle navigation menu"
           aria-expanded={isOpenMobile}
-          className="w-10 h-10 rounded-full bg-[var(--backgroundColor)] border border-[var(--primaryBorderColor)] shadow-sm flex items-center justify-center text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--grey1)] cursor-pointer"
+          className="w-10 h-10 rounded-full bg-[var(--backgroundColor)]/90 backdrop-blur-md border border-[var(--primaryBorderColor)] shadow-sm flex items-center justify-center text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--grey1)] cursor-pointer"
         >
           <SidebarToggleIcon className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Mobile Floating Action Buttons - directly opposite on the right */}
+      <div className="no-print lg:hidden fixed top-4 right-4 z-40 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setIsPreviewingPrint(true)}
+          aria-label="Print or export CV"
+          title="Print CV"
+          className="w-10 h-10 rounded-full bg-[var(--backgroundColor)]/90 backdrop-blur-md border border-[var(--primaryBorderColor)] shadow-sm flex items-center justify-center text-[var(--grey1)] hover:bg-[var(--grey5)] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-[var(--grey1)] cursor-pointer"
+        >
+          <Printer className="w-4 h-4" />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleShare}
+          disabled={hasUnsavedHandle}
+          aria-label="Share profile"
+          title="Share profile"
+          className="w-10 h-10 rounded-full bg-[var(--backgroundColor)]/90 backdrop-blur-md border border-[var(--primaryBorderColor)] shadow-sm flex items-center justify-center text-[var(--grey1)] hover:bg-[var(--grey5)] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-[var(--grey1)] cursor-pointer"
+        >
+          <Share2 className="w-4 h-4" />
         </button>
       </div>
 
@@ -133,7 +141,7 @@ export function Sidebar({
         <div className="space-y-6">
           {/* Cvvd Logo Mark */}
           <Link
-            to="/"
+            to={session?.user ? '/home' : '/'}
             className="flex items-center gap-2.5 px-2 group"
           >
             <div className="text-[var(--grey1)] transition-transform group-hover:scale-105">
@@ -151,12 +159,12 @@ export function Sidebar({
               className="flex items-center gap-3 px-2 py-2 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors"
             >
               <ExploreIcon className="w-5 h-5 text-[var(--grey3)]" />
-              <span>Explore creators</span>
+              <span>People</span>
             </Link>
           </nav>
 
-          {/* Section Navigation: Studio Tabs on /edit, On-This-Page on Profile */}
-          {isEditPage ? (
+          {/* Studio Tabs Navigation on /edit */}
+          {isEditPage && (
             <div className="space-y-1">
               <div className="px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-semibold font-mono">
                 Edit Sections
@@ -191,56 +199,11 @@ export function Sidebar({
                 })}
               </nav>
             </div>
-          ) : (
-            <div className="space-y-1">
-              <div className="px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-semibold font-mono">
-                On this page
-              </div>
-              <nav className="space-y-0.5 text-[13px]" aria-label="Profile Sections">
-                <a
-                  href="#about"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    scrollToSection('about')
-                  }}
-                  className="flex items-center gap-3 px-2 py-1.5 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors"
-                >
-                  <OpenRolesIcon className="w-4 h-4 text-[var(--grey3)]" />
-                  <span>About & roles</span>
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => scrollToSection('work-experience')}
-                  aria-label="Scroll to experience"
-                  className="w-full flex items-center gap-3 px-2 py-1.5 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors text-left cursor-pointer"
-                >
-                  <SearchIcon className="w-4 h-4 text-[var(--grey3)]" />
-                  <span>Experience</span>
-                </button>
-
-                <a
-                  href="#writing"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    const el = document.getElementById('writing')
-                    if (el) {
-                      scrollToSection('writing')
-                    } else {
-                      showToast('No posts or writing on this profile')
-                      setIsOpenMobile(false)
-                    }
-                  }}
-                  className="flex items-center gap-3 px-2 py-1.5 rounded-lg text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-colors"
-                >
-                  <PostsIcon className="w-4 h-4 text-[var(--grey3)]" />
-                  <span>Posts</span>
-                </a>
-              </nav>
-            </div>
           )}
 
-          <div className="pt-2 border-t border-[var(--secondaryBorderColor)]" />
+          {isEditPage && (
+            <div className="pt-2 border-t border-[var(--secondaryBorderColor)]" />
+          )}
 
           {/* CV & Portfolio Tools */}
           <div className="space-y-1.5 text-[13px]" aria-label="CV Controls">
@@ -413,23 +376,38 @@ export function Sidebar({
 
         {/* Bottom: User & Theme Switcher */}
         <div className="pt-4 border-t border-[var(--secondaryBorderColor)] flex items-center justify-between gap-2 px-2">
-          <div
-            className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden"
-            title={profile.basics.handle || 'cvvd'}
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            <span className="text-[12px] text-neutral-600 dark:text-neutral-300 truncate font-mono block">
-              {profile.basics.handle || 'cvvd'}
-            </span>
-          </div>
+          {profile.basics.handle ? (
+            <Link
+              to="/$handle"
+              params={{ handle: profile.basics.handle.replace(/^cvvd\//, '') }}
+              onClick={() => setIsOpenMobile(false)}
+              className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden group hover:opacity-80 transition-opacity"
+              title={`View ${profile.basics.handle} live profile`}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+              <span className="text-[12px] text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-950 dark:group-hover:text-white truncate font-mono block">
+                {profile.basics.handle}
+              </span>
+            </Link>
+          ) : (
+            <div
+              className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden"
+              title="cvvd"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+              <span className="text-[12px] text-neutral-600 dark:text-neutral-300 truncate font-mono block">
+                cvvd
+              </span>
+            </div>
+          )}
 
           <button
             type="button"
             onClick={toggleTheme}
-            aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-            className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-neutral-950 dark:focus-visible:ring-white"
+            aria-label={`Switch to ${mounted && isDark ? 'light' : 'dark'} mode`}
+            className="p-1.5 rounded-lg border border-[var(--secondaryBorderColor)] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--inputBackgroundColor)] transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-[var(--grey1)]"
           >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {mounted && isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
         </div>
       </aside>

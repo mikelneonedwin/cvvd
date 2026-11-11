@@ -8,6 +8,7 @@ import {
 } from 'react'
 import type {
   EducationItem,
+  LayoutPreset,
   PrintSettings,
   ProfileBasics,
   ProjectItem,
@@ -20,6 +21,7 @@ import { initialProfile } from '../data/initialProfile'
 
 const STORAGE_KEY = 'cvvd_profile_v2'
 const LEGACY_STORAGE_KEY = 'readcv_profile_v2'
+export const PREFERRED_LAYOUT_STORAGE_KEY = 'cvvd_preferred_layout'
 
 interface ProfileContextValue {
   profile: UserProfile
@@ -48,8 +50,14 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(undefined)
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(() => {
+    let savedLayout: LayoutPreset | undefined
     try {
       if (typeof window !== 'undefined') {
+        const directLayout = localStorage.getItem(PREFERRED_LAYOUT_STORAGE_KEY) as LayoutPreset | null
+        if (directLayout && (directLayout === 'editorial' || directLayout === 'single-column' || directLayout === 'balanced')) {
+          savedLayout = directLayout
+        }
+
         const saved =
           localStorage.getItem(STORAGE_KEY) ||
           localStorage.getItem(LEGACY_STORAGE_KEY)
@@ -66,6 +74,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
               printSettings: {
                 ...initialProfile.printSettings,
                 ...(parsed.printSettings || {}),
+                ...(savedLayout ? { layoutPreset: savedLayout } : {}),
               },
             }
           }
@@ -74,7 +83,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     } catch {
       // Fallback to initialProfile if parse fails
     }
-    return initialProfile
+    return savedLayout
+      ? {
+          ...initialProfile,
+          printSettings: {
+            ...initialProfile.printSettings,
+            layoutPreset: savedLayout,
+          },
+        }
+      : initialProfile
   })
 
   const [isEditing, setIsEditing] = useState(false)
@@ -137,6 +154,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const updatePrintSettings = useCallback((settings: Partial<PrintSettings>) => {
+    if (settings.layoutPreset) {
+      try {
+        localStorage.setItem(PREFERRED_LAYOUT_STORAGE_KEY, settings.layoutPreset)
+      } catch {
+        // Ignore storage write error
+      }
+    }
     setProfile((prev) => ({
       ...prev,
       printSettings: {
@@ -147,11 +171,37 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const resetProfile = useCallback(() => {
-    setProfile(initialProfile)
+    let savedLayout: LayoutPreset | undefined
+    try {
+      const directLayout = localStorage.getItem(PREFERRED_LAYOUT_STORAGE_KEY) as LayoutPreset | null
+      if (directLayout && (directLayout === 'editorial' || directLayout === 'single-column' || directLayout === 'balanced')) {
+        savedLayout = directLayout
+      }
+    } catch {
+      // Ignore storage read error
+    }
+
+    setProfile({
+      ...initialProfile,
+      printSettings: {
+        ...initialProfile.printSettings,
+        ...(savedLayout ? { layoutPreset: savedLayout } : {}),
+      },
+    })
     showToast('Reset to default Cvvd template')
   }, [showToast])
 
   const loadProfile = useCallback((data: UserProfile) => {
+    let savedLayout: LayoutPreset | undefined
+    try {
+      const directLayout = localStorage.getItem(PREFERRED_LAYOUT_STORAGE_KEY) as LayoutPreset | null
+      if (directLayout && (directLayout === 'editorial' || directLayout === 'single-column' || directLayout === 'balanced')) {
+        savedLayout = directLayout
+      }
+    } catch {
+      // Ignore storage read error
+    }
+
     setProfile({
       ...initialProfile,
       ...data,
@@ -162,6 +212,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       printSettings: {
         ...initialProfile.printSettings,
         ...(data.printSettings || {}),
+        ...(savedLayout ? { layoutPreset: savedLayout } : {}),
       },
     })
   }, [])
@@ -184,8 +235,24 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, [profile, showToast])
 
   const triggerPrint = useCallback(() => {
+    const isDarkPrint = profile.printSettings?.printTheme === 'dark'
+    if (isDarkPrint) {
+      document.body.classList.add('print-theme-dark')
+      document.documentElement.classList.add('print-theme-dark')
+    } else {
+      document.body.classList.remove('print-theme-dark')
+      document.documentElement.classList.remove('print-theme-dark')
+    }
+
+    const cleanup = () => {
+      document.body.classList.remove('print-theme-dark')
+      document.documentElement.classList.remove('print-theme-dark')
+      window.removeEventListener('afterprint', cleanup)
+    }
+    window.addEventListener('afterprint', cleanup)
+
     window.print()
-  }, [])
+  }, [profile.printSettings?.printTheme])
 
   return (
     <ProfileContext.Provider

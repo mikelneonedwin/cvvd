@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as HandleRouteImport } from './routes/$handle'
 import { Route as EditRouteImport } from './routes/edit'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -37,6 +38,11 @@ const EditRoute = EditRouteImport.update({
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/$handle': typeof HandleRoute
   '/edit': typeof EditRoute
   '/explore': typeof ExploreRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/$handle': typeof HandleRoute
   '/edit': typeof EditRoute
   '/explore': typeof ExploreRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/$handle': typeof HandleRoute
   '/edit': typeof EditRoute
   '/explore': typeof ExploreRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/$handle'
     | '/edit'
     | '/explore'
+    | '/home'
     | '/login'
     | '/signup'
     | '/api/auth/$'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/$handle'
     | '/edit'
     | '/explore'
+    | '/home'
     | '/login'
     | '/signup'
     | '/api/auth/$'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/$handle'
     | '/edit'
     | '/explore'
+    | '/home'
     | '/login'
     | '/signup'
     | '/api/auth/$'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   HandleRoute: typeof HandleRoute
   EditRoute: typeof EditRoute
   ExploreRoute: typeof ExploreRoute
+  HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   HandleRoute: HandleRoute,
   EditRoute: EditRoute,
   ExploreRoute: ExploreRoute,
+  HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

@@ -1,6 +1,8 @@
 import type { UserProfile, LayoutPreset } from '../../types/profile'
 import { CustomSelect } from '../CustomSelect'
 import { Checkbox } from '../Checkbox'
+import { useProfile } from '../../context/ProfileContext'
+import { Printer } from 'lucide-react'
 
 interface StudioLayoutProps {
   form: UserProfile
@@ -32,15 +34,28 @@ const LAYOUT_OPTIONS: readonly LayoutOption[] = [
 ]
 
 export function StudioLayout({ form, setForm }: StudioLayoutProps) {
+  const { setIsPreviewingPrint } = useProfile()
+
   return (
     <div className="space-y-8 animate-fadeIn">
-      <div>
-        <h2 className="text-lg font-medium text-[var(--grey1)]">
-          Layout and print preferences
-        </h2>
-        <p className="text-xs text-[var(--grey3)] mt-0.5">
-          Choose how your profile renders online and formats during PDF printing.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-medium text-[var(--grey1)]">
+            Layout and print preferences
+          </h2>
+          <p className="text-xs text-[var(--grey3)] mt-0.5">
+            Choose how your profile renders online and formats during PDF printing.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsPreviewingPrint(true)}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-[var(--grey1)] border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/50 hover:bg-[var(--inputBackgroundColor)] hover:border-[var(--grey3)] transition-all active:scale-98 cursor-pointer shrink-0 self-start sm:self-auto shadow-2xs"
+        >
+          <Printer className="w-3.5 h-3.5" />
+          <span>Open print preview</span>
+        </button>
       </div>
 
       {/* Layout Presets Selection */}
@@ -163,6 +178,36 @@ export function StudioLayout({ form, setForm }: StudioLayoutProps) {
               }
               aria-label="Include links in printed CV"
             />
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[var(--secondaryBorderColor)]">
+            <div>
+              <div className="text-sm font-medium text-[var(--grey1)]">
+                Print Color Mode
+              </div>
+              <div className="text-xs text-[var(--grey3)]">
+                Export CV as clean light paper or rich dark digital sheet.
+              </div>
+            </div>
+            <div className="w-full sm:w-[200px] shrink-0">
+              <CustomSelect
+                value={form.printSettings.printTheme || 'light'}
+                onChange={(val) => {
+                  const printTheme = val === 'dark' ? 'dark' : 'light'
+                  setForm({
+                    ...form,
+                    printSettings: {
+                      ...form.printSettings,
+                      printTheme,
+                    },
+                  })
+                }}
+                options={[
+                  { value: 'light', label: 'Light (Paper standard)' },
+                  { value: 'dark', label: 'Dark (Digital sheet)' },
+                ]}
+                aria-label="Print color mode"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
+import { getRequestHeaders } from '@tanstack/react-start/server'
 import { useQuery } from '@tanstack/react-query'
 import {
   ArrowRight,
@@ -8,31 +10,67 @@ import {
   ExternalLink,
   Sun,
   Moon,
+  Star,
 } from 'lucide-react'
 import { CvvdLogo, GitHubIcon } from '../components/CvvdIcons'
+import { fetchGitHubStars } from '../components/GitHubStarBadge'
+import { formatStarCount } from '../lib/github'
 import { trpc } from '../trpc/client'
+import { auth } from '../lib/auth'
 import { useSession } from '../lib/auth-client'
 import { useTheme } from '../context/ThemeContext'
 import { isReservedHandle } from '../lib/reservedHandles'
+import { ExplorePage } from './explore'
 
-export const Route = createFileRoute('/')({
-  component: HomePage,
+const getAuthSession = createServerFn({ method: 'GET' }).handler(async () => {
+  try {
+    const headers = getRequestHeaders()
+    const session = await auth.api.getSession({ headers })
+    return { isAuthenticated: Boolean(session?.user) }
+  } catch {
+    return { isAuthenticated: false }
+  }
 })
 
-type PreviewMode = 'web' | 'print'
+export const Route = createFileRoute('/')({
+  loader: async () => {
+    return getAuthSession()
+  },
+  component: RootIndexRoute,
+})
+
+function RootIndexRoute() {
+  const loaderData = Route.useLoaderData()
+  const { data: session } = useSession()
+
+  const isAuthenticated = loaderData?.isAuthenticated || Boolean(session?.user)
+
+  if (isAuthenticated) {
+    return <ExplorePage />
+  }
+
+  return <HomePage />
+}
 
 export function HomePage() {
   const { data: session } = useSession()
-  const { isDark, toggleTheme } = useTheme()
+  const { isDark, mounted, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   const [desiredHandle, setDesiredHandle] = useState('')
   const [handleError, setHandleError] = useState<string | null>(null)
-  const [previewMode, setPreviewMode] = useState<PreviewMode>('web')
 
   const { data: featuredCreators } = useQuery(
     trpc.profile.listFeatured.queryOptions()
   )
+
+  const { data: cvvdStars } = useQuery({
+    queryKey: ['github-stars', 'mikelneonedwin', 'cvvd'],
+    queryFn: () => fetchGitHubStars('mikelneonedwin', 'cvvd'),
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+    retry: false,
+  })
 
   const handleClaimSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,12 +95,14 @@ export function HomePage() {
 
   const creators = featuredCreators || []
 
+  const brandHomeLink = session?.user ? '/home' : '/'
+
   return (
     <div className="min-h-screen bg-[var(--backgroundColor)] text-[var(--grey1)] selection:bg-[var(--grey2)] selection:text-[var(--backgroundColor)] transition-colors duration-200">
       {/* Top Header */}
       <header className="sticky top-0 z-40 w-full border-b border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)]/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 group">
+          <Link to={brandHomeLink} className="flex items-center gap-2.5 group">
             <div className="text-[var(--grey1)] transition-transform group-hover:scale-105">
               <CvvdLogo className="w-7 h-7" />
             </div>
@@ -77,18 +117,24 @@ export function HomePage() {
               target="_blank"
               rel="noreferrer"
               aria-label="View source on GitHub"
-              className="p-2 rounded-xl border border-[var(--secondaryBorderColor)] text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-850 transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+              className="group px-2.5 py-1.5 rounded-xl border border-[var(--secondaryBorderColor)] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--inputBackgroundColor)] transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer text-xs font-mono"
             >
-              <GitHubIcon className="w-4 h-4" />
+              <GitHubIcon className="w-4 h-4 shrink-0 text-current" />
+              {typeof cvvdStars === 'number' && (
+                <span className="flex items-center gap-1 text-[11px] text-[var(--grey3)] group-hover:text-[var(--grey1)] font-medium pl-0.5 border-l border-[var(--secondaryBorderColor)]">
+                  <Star className="w-3 h-3 fill-current text-current shrink-0 opacity-80" />
+                  <span>{formatStarCount(cvvdStars)}</span>
+                </span>
+              )}
             </a>
 
             <button
               type="button"
               onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="p-2 rounded-xl border border-[var(--secondaryBorderColor)] text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-850 transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+              aria-label={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="p-2 rounded-xl border border-[var(--secondaryBorderColor)] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--inputBackgroundColor)] transition-colors flex items-center justify-center shrink-0 cursor-pointer"
             >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {mounted && isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
             {session?.user ? (
@@ -137,7 +183,7 @@ export function HomePage() {
               )
             }
             placeholder="your-name"
-            className="w-full bg-transparent py-2.5 text-sm font-mono text-[var(--grey1)] placeholder:text-[var(--grey4)] focus:outline-none focus:ring-0 outline-none border-none no-focus-ring"
+            className="w-full bg-transparent py-2.5 text-sm font-mono text-[var(--grey1)] placeholder:text-[var(--grey3)] focus:outline-none focus:ring-0 outline-none border-none no-focus-ring"
           />
           <button
             type="submit"
@@ -159,9 +205,9 @@ export function HomePage() {
           <Link
             to="/$handle"
             params={{ handle: 'mikelneonedwin' }}
-            className="text-[var(--grey2)] underline hover:text-[var(--grey1)]"
+            className="font-medium text-[var(--grey1)] underline decoration-[var(--grey3)] underline-offset-4 hover:decoration-[var(--grey1)] transition-colors cursor-pointer"
           >
-            explore Winner Edwin's living CV
+            explore Winner Edwin&apos;s living CV
           </Link>
         </div>
       </section>
@@ -177,245 +223,96 @@ export function HomePage() {
               The Artifact
             </span>
             <h2 className="text-xl font-normal text-[var(--grey1)] mt-0.5">
-              One dataset. Two disciplined outputs.
+              A permanent, readable digital canvas.
             </h2>
-          </div>
-
-          {/* Toggle between Web and Print Preview */}
-          <div className="inline-flex p-1 rounded-xl bg-[var(--inputBackgroundColor)] border border-[var(--secondaryBorderColor)] text-xs font-medium">
-            <button
-              type="button"
-              onClick={() => setPreviewMode('web')}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                previewMode === 'web'
-                  ? 'bg-white dark:bg-neutral-800 text-neutral-950 dark:text-white shadow-2xs font-medium'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white'
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Web profile</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreviewMode('print')}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                previewMode === 'print'
-                  ? 'bg-white dark:bg-neutral-800 text-neutral-950 dark:text-white shadow-2xs font-medium'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white'
-              }`}
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print sheet (PDF)</span>
-            </button>
           </div>
         </div>
 
         {/* Live Artifact Container */}
         <div className="rounded-2xl border border-[var(--secondaryBorderColor)] bg-[var(--inputBackgroundColor)]/30 p-4 sm:p-10 shadow-xs">
-          {previewMode === 'web' ? (
-            <div className="max-w-[540px] mx-auto bg-[var(--backgroundColor)] p-6 sm:p-10 rounded-2xl border border-[var(--secondaryBorderColor)] shadow-sm space-y-8 animate-fadeIn">
-              {/* Header */}
-              <div className="flex justify-between items-start gap-4">
-                <div className="space-y-1.5">
-                  <h3 className="text-xl font-normal text-[var(--grey1)]">
-                    Winner Edwin
-                  </h3>
-                  <p className="text-xs text-[var(--grey3)]">
-                    Software Engineer in Uyo, Nigeria
-                  </p>
-                </div>
-                <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--grey4)] shrink-0 ring-1 ring-[var(--secondaryBorderColor)]">
-                  <img
-                    src="https://lh3.googleusercontent.com/a/ACg8ocJ0xfPH6gfARpcf7a5mmQQWGTTpXh51PKt0AHX9A3x7lJkVfMBo=s96-c"
-                    alt="Winner Edwin"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-
-              {/* About section with 136px gutter simulation */}
-              <div className="space-y-2 border-t border-[var(--secondaryBorderColor)] pt-5">
-                <div className="text-sm font-normal text-[var(--grey3)]">About</div>
-                <p className="text-xs text-[var(--grey2)] leading-relaxed sm:ml-[100px]">
-                  Fullstack developer who enjoys understanding how things work and building them properly. Five years building products across React, Next.js, and backend systems.
+          <div className="max-w-[540px] mx-auto bg-[var(--backgroundColor)] p-6 sm:p-10 rounded-2xl border border-[var(--secondaryBorderColor)] shadow-sm space-y-8 animate-fadeIn">
+            {/* Header */}
+            <div className="flex justify-between items-start gap-4">
+              <div className="space-y-1.5">
+                <h3 className="text-xl font-normal text-[var(--grey1)]">
+                  Winner Edwin
+                </h3>
+                <p className="text-xs text-[var(--grey3)]">
+                  Software Engineer in Uyo, Nigeria
                 </p>
               </div>
-
-              {/* Work section with 100px duration gutter */}
-              <div className="space-y-4 border-t border-[var(--secondaryBorderColor)] pt-5">
-                <div className="text-sm font-normal text-[var(--grey3)]">
-                  Work experience
-                </div>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-2 sm:gap-4 text-xs">
-                    <div className="text-[var(--grey3)] font-mono sm:text-right">
-                      2025 - Now
-                    </div>
-                    <div>
-                      <div className="font-medium text-[var(--grey1)]">
-                        Software Engineer at Applift Labs
-                      </div>
-                      <div className="text-[var(--grey3)] text-[11px] mt-0.5">
-                        Uyo, Nigeria
-                      </div>
-                      <p className="text-[var(--grey2)] mt-1.5 leading-relaxed">
-                        Took ownership of frontend development and helped turn requirements into shipped software across multi-tenant platforms, internal tools, and ERPs.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-2 sm:gap-4 text-xs pt-2">
-                    <div className="text-[var(--grey3)] font-mono sm:text-right">
-                      2025
-                    </div>
-                    <div>
-                      <div className="font-medium text-[var(--grey1)]">
-                        Frontend Developer at LawdAm
-                      </div>
-                      <div className="text-[var(--grey3)] text-[11px] mt-0.5">
-                        Uyo, Nigeria
-                      </div>
-                      <p className="text-[var(--grey2)] mt-1.5 leading-relaxed">
-                        Led web app development as primary client developer, building features around anonymous group chats, direct messages, and identity switching.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Live Preview Bar */}
-              <div className="pt-4 border-t border-[var(--secondaryBorderColor)] flex items-center justify-between text-xs">
-                <span className="font-mono text-[var(--grey3)]">cvvd/mikelneonedwin</span>
-                <Link
-                  to="/$handle"
-                  params={{ handle: 'mikelneonedwin' }}
-                  className="inline-flex items-center gap-1 font-medium text-[var(--grey1)] hover:underline"
-                >
-                  <span>Open live profile</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </Link>
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--grey4)] shrink-0 ring-1 ring-[var(--secondaryBorderColor)]">
+                <img
+                  src="https://lh3.googleusercontent.com/a/ACg8ocJ0xfPH6gfARpcf7a5mmQQWGTTpXh51PKt0AHX9A3x7lJkVfMBo=s96-c"
+                  alt="Winner Edwin"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
-          ) : (
-            <div className="max-w-[620px] mx-auto bg-white text-neutral-900 p-8 sm:p-12 rounded-lg shadow-xl font-sans space-y-6 animate-fadeIn border border-neutral-200">
-              {/* Publication Masthead */}
-              <div className="pb-2 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-2xl font-normal tracking-tight text-neutral-950">
-                      Winner Edwin
-                    </h3>
-                    <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest border border-neutral-300 px-1.5 py-0.5 rounded">
-                      Cvvd
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-700 font-medium">
-                    Software Engineer
-                  </p>
-                  <p className="text-[11px] font-mono text-neutral-500">
-                    Uyo, Nigeria · mikelneonedwin.vercel.app · winneredwin2667@gmail.com
-                  </p>
-                </div>
-                <div className="text-left sm:text-right font-mono text-[10px] text-neutral-400 shrink-0">
-                  <div>A4 / Letter Sheet</div>
-                  <div>Monospace Gutters</div>
-                </div>
+
+            {/* About section with 136px gutter simulation */}
+            <div className="space-y-2 pt-2">
+              <div className="text-sm font-normal text-[var(--grey3)]">About</div>
+              <p className="text-xs text-[var(--grey2)] leading-relaxed sm:ml-[100px]">
+                Fullstack developer who enjoys understanding how things work and building them properly. Five years building products across React, Next.js, and backend systems.
+              </p>
+            </div>
+
+            {/* Work section with 100px duration gutter */}
+            <div className="space-y-4 pt-2">
+              <div className="text-sm font-normal text-[var(--grey3)]">
+                Work experience
               </div>
-
-              {/* Monospace Gutter Section Layout */}
-              <div className="space-y-6 text-xs">
-                {/* Work Experience */}
-                <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
-                    Experience
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-2 sm:gap-4 text-xs">
+                  <div className="text-[var(--grey3)] font-mono sm:text-right">
+                    2025 - Now
                   </div>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
-                      <div className="font-mono text-[11px] text-neutral-500 sm:text-right">
-                        2025 - Now
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-950">
-                          Software Engineer at Applift Labs
-                        </div>
-                        <div className="text-[11px] text-neutral-500 mt-0.5">
-                          Uyo, Nigeria
-                        </div>
-                        <p className="text-neutral-700 mt-1 leading-relaxed text-[11.5px]">
-                          Frontend architecture, multi-tenant SaaS systems, ERP integrations, and internal developer tooling.
-                        </p>
-                      </div>
+                  <div>
+                    <div className="font-medium text-[var(--grey1)]">
+                      Software Engineer at Applift Labs
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
-                      <div className="font-mono text-[11px] text-neutral-500 sm:text-right">
-                        2025
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-950">
-                          Frontend Developer at LawdAm
-                        </div>
-                        <div className="text-[11px] text-neutral-500 mt-0.5">
-                          Uyo, Nigeria
-                        </div>
-                        <p className="text-neutral-700 mt-1 leading-relaxed text-[11.5px]">
-                          Primary client developer for anonymous group chats, messaging workflows, and cross-platform identity sync.
-                        </p>
-                      </div>
+                    <div className="text-[var(--grey3)] text-[11px] mt-0.5">
+                      Uyo, Nigeria
                     </div>
+                    <p className="text-[var(--grey2)] mt-1.5 leading-relaxed">
+                      Took ownership of frontend development and helped turn requirements into shipped software across multi-tenant platforms, internal tools, and ERPs.
+                    </p>
                   </div>
                 </div>
 
-                {/* Selected Projects */}
-                <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
-                    Projects
+                <div className="grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-2 sm:gap-4 text-xs pt-2">
+                  <div className="text-[var(--grey3)] font-mono sm:text-right">
+                    2025
                   </div>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
-                      <div className="font-mono text-[11px] text-neutral-500 sm:text-right">
-                        2025
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-950">
-                          Modools (Applift Labs)
-                        </div>
-                        <p className="text-neutral-700 mt-0.5 leading-relaxed text-[11.5px]">
-                          Digital platform replacing STEM lab manuals in Nigerian universities with structured video practicals and automated tracking.
-                        </p>
-                      </div>
+                  <div>
+                    <div className="font-medium text-[var(--grey1)]">
+                      Frontend Developer at LawdAm
                     </div>
+                    <div className="text-[var(--grey3)] text-[11px] mt-0.5">
+                      Uyo, Nigeria
+                    </div>
+                    <p className="text-[var(--grey2)] mt-1.5 leading-relaxed">
+                      Led web app development as primary client developer, building features around anonymous group chats, direct messages, and identity switching.
+                    </p>
                   </div>
                 </div>
-
-                {/* Education */}
-                <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-400 mb-3">
-                    Education & Credentials
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-[72px_1fr] gap-2 sm:gap-4 items-baseline">
-                    <div className="font-mono text-[11px] text-neutral-500 sm:text-right">
-                      2024 - 2027
-                    </div>
-                    <div>
-                      <div className="font-medium text-neutral-950">
-                        University of Uyo (UNIUYO)
-                      </div>
-                      <p className="text-neutral-700 text-[11.5px] mt-0.5">
-                        BSc Computer Science
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sheet Calibrated Footer */}
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-between text-[10.5px] text-neutral-500 font-mono gap-2">
-                <span>Pixel-calibrated PDF sheet (14mm margins)</span>
-                <span>Press ⌘P on profile to export</span>
               </div>
             </div>
-          )}
+
+            {/* Live Preview Bar */}
+            <div className="pt-4 flex items-center justify-between text-xs">
+              <span className="font-mono text-[var(--grey3)]">cvvd/mikelneonedwin</span>
+              <Link
+                to="/$handle"
+                params={{ handle: 'mikelneonedwin' }}
+                className="inline-flex items-center gap-1 font-medium text-[var(--grey1)] hover:underline"
+              >
+                <span>Open live profile</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 

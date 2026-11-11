@@ -48,7 +48,7 @@ export function ProjectsSection() {
                     {project.link && <GitHubStarBadge url={project.link} />}
                     {project.tagline && (
                       <span className="text-[var(--grey3)] font-normal text-[13px] ml-0.5">
-                        · {project.tagline}
+                        {project.tagline}
                       </span>
                     )}
                   </div>

@@ -6,6 +6,7 @@ import {
   Eye,
   EyeOff,
   Loader2,
+  Globe,
 } from 'lucide-react'
 import { CvvdLogo } from '../components/CvvdIcons'
 import { trpc, trpcClient, queryClient } from '../trpc/client'
@@ -220,57 +221,65 @@ export function ProfileEditorPage() {
 
   if (!form) return null
 
-  // Has existing data if user already has an experience, project, education, or non-empty bio
-  const hasExistingData = Boolean(
-    form.experience.length > 0 ||
-      form.projects.length > 0 ||
-      form.writing.length > 0 ||
-      form.education.length > 0 ||
-      form.basics.summary.trim().length > 0
-  )
-
-  const showSidebar = hasExistingData
-
   // Track if current draft handle is different from saved database handle
   const savedCleanHandle = (profileData?.rawHandle || '').toLowerCase().trim()
   const currentDraftCleanHandle = (rawHandle || form.basics.handle.replace(/^cvvd\//, '')).toLowerCase().trim()
   const hasUnsavedHandle = Boolean(
     savedCleanHandle && currentDraftCleanHandle && savedCleanHandle !== currentDraftCleanHandle
   )
+  const profileHandleTarget = savedCleanHandle || currentDraftCleanHandle
 
   return (
     <div className="min-h-screen bg-[var(--backgroundColor)] text-[var(--grey1)] selection:bg-[var(--grey2)] selection:text-[var(--backgroundColor)]">
-      {/* Persistent Sidebar rendered when user already has existing profile data */}
-      {showSidebar && (
-        <Sidebar
-          activeTab={activeTab}
-          onSelectTab={(tab) => {
-            setActiveTab(tab)
-            if (isPreviewMode) setIsPreviewMode(false)
-          }}
-          isPreviewMode={isPreviewMode}
-          hasUnsavedHandle={hasUnsavedHandle}
-        />
-      )}
+      {/* Persistent Sidebar rendered on /edit */}
+      <Sidebar
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          setActiveTab(tab)
+          if (isPreviewMode) setIsPreviewMode(false)
+        }}
+        isPreviewMode={isPreviewMode}
+        hasUnsavedHandle={hasUnsavedHandle}
+      />
 
-      <div className={showSidebar ? 'lg:pl-[240px]' : ''}>
+      <div className="lg:pl-[240px]">
         {/* Top Navigation Bar */}
         <header className="sticky top-0 z-40 border-b border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)]/95 backdrop-blur-md">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Link to="/" className="text-[var(--grey1)]">
+              <Link to={session?.user ? '/home' : '/'} className="text-[var(--grey1)]">
                 <CvvdLogo className="w-6 h-6" />
               </Link>
               <div className="h-4 w-px bg-[var(--secondaryBorderColor)] hidden sm:block" />
               <span className="text-xs font-mono text-[var(--grey3)] hidden sm:inline">
                 Profile Studio
               </span>
-              <span className="text-xs font-mono text-[var(--grey2)] truncate max-w-[140px] sm:max-w-none">
-                cvvd/{rawHandle || 'you'}
-              </span>
+              {profileHandleTarget ? (
+                <Link
+                  to="/$handle"
+                  params={{ handle: profileHandleTarget }}
+                  title="View your live profile"
+                  className="text-xs font-mono text-[var(--grey2)] hover:text-[var(--grey1)] hover:underline truncate max-w-[140px] sm:max-w-none transition-colors"
+                >
+                  cvvd/{rawHandle || profileHandleTarget}
+                </Link>
+              ) : (
+                <span className="text-xs font-mono text-[var(--grey2)] truncate max-w-[140px] sm:max-w-none">
+                  cvvd/{rawHandle || 'you'}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
+              <Link
+                to="/explore"
+                title="People / Explore"
+                aria-label="People / Explore"
+                className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl border border-[var(--secondaryBorderColor)] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--grey5)] transition-all active:scale-95 cursor-pointer"
+              >
+                <Globe className="w-4 h-4" />
+              </Link>
+
               <button
                 type="button"
                 onClick={() => setIsPreviewMode((prev) => !prev)}
@@ -312,7 +321,7 @@ export function ProfileEditorPage() {
             <div
               role="tablist"
               aria-label="Profile Studio Sections"
-              className="max-w-5xl mx-auto px-4 sm:px-6 flex overflow-x-auto no-scrollbar border-t border-[var(--secondaryBorderColor)]"
+              className="max-w-5xl mx-auto px-4 sm:px-6 flex overflow-x-auto no-scrollbar"
             >
               {STUDIO_TABS.map(({ id, label, icon: Icon }) => (
                 <button

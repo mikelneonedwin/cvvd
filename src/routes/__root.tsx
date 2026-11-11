@@ -24,6 +24,19 @@ export const Route = createRootRoute({
         content:
           'A clean, presentable home for your work, your story, and your printable CV. Inspired by read.cv, crafted for designers, engineers, and creators.',
       },
+      { name: 'author', content: 'Winner Edwin' },
+      { name: 'creator', content: 'Cvvd' },
+      { name: 'publisher', content: 'Cvvd' },
+      {
+        name: 'keywords',
+        content:
+          'CV, resume, living profile, read.cv, portfolio, publication, developer, designer, builder, PDF export',
+      },
+      {
+        name: 'robots',
+        content:
+          'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+      },
       {
         property: 'og:title',
         content: 'Cvvd - Living Profiles and Printable CV Engine',
@@ -36,7 +49,16 @@ export const Route = createRootRoute({
       { property: 'og:type', content: 'website' },
       { property: 'og:site_name', content: 'Cvvd' },
       { property: 'og:url', content: 'https://cvvd.vercel.app' },
+      { property: 'og:locale', content: 'en_US' },
+      {
+        property: 'og:image',
+        content: 'https://cvvd.vercel.app/og-image.png',
+      },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      { property: 'og:image:alt', content: 'Cvvd - Living Profiles & Printable CV Engine' },
       { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:creator', content: '@mikelneonedwin' },
       {
         name: 'twitter:title',
         content: 'Cvvd - Living Profiles and Printable CV Engine',
@@ -46,9 +68,14 @@ export const Route = createRootRoute({
         content:
           'A clean, presentable home for your work, your story, and your printable CV.',
       },
+      {
+        name: 'twitter:image',
+        content: 'https://cvvd.vercel.app/og-image.png',
+      },
     ],
     links: [
       { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      { rel: 'canonical', href: 'https://cvvd.vercel.app' },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       {
         rel: 'preconnect',
@@ -83,7 +110,7 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

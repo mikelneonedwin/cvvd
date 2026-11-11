@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { createFileRoute, Link, useParams, useNavigate } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 import { useQuery } from '@tanstack/react-query'
+import { eq } from 'drizzle-orm'
 import { Edit3, ArrowLeft } from 'lucide-react'
+import { db } from '../db'
+import { profiles } from '../db/schema'
 import { trpc } from '../trpc/client'
 import { useSession } from '../lib/auth-client'
 import { useProfile } from '../context/ProfileContext'
@@ -9,25 +13,95 @@ import { CVProfile } from '../components/CVProfile'
 import { Sidebar } from '../components/Sidebar'
 import { PrintPreviewModal } from '../components/PrintPreviewModal'
 import { ProfileSkeleton } from '../components/Skeleton'
+import { ProfileFloatingNav } from '../components/ProfileFloatingNav'
+
+const getProfileServerMeta = createServerFn({ method: 'GET' })
+  .validator((handle: string) => handle)
+  .handler(async ({ data: handle }) => {
+    try {
+      const clean = handle.toLowerCase().replace(/^@/, '')
+      const found = await db.query.profiles.findFirst({
+        where: eq(profiles.handle, clean),
+      })
+      if (!found) return null
+
+      let avatarUrl = found.avatarUrl || ''
+      if (avatarUrl.startsWith('/api/avatar/')) {
+        avatarUrl = `https://cvvd.vercel.app${avatarUrl}`
+      }
+
+      return {
+        name: found.name,
+        handle: found.handle,
+        headline: found.headline,
+        summary: found.summary || '',
+        location: found.location || '',
+        avatarUrl,
+      }
+    } catch {
+      return null
+    }
+  })
 
 export const Route = createFileRoute('/$handle')({
-  head: ({ params }) => {
+  loader: async ({ params }) => {
+    return getProfileServerMeta({ data: params.handle })
+  },
+  head: ({ params, loaderData }) => {
     const clean = (params.handle || 'creator').toLowerCase().replace(/^@/, '')
-    const title = `${clean} - Cvvd profile`
-    const description = `View ${clean}'s living profile and printable CV on Cvvd.`
+    const name = loaderData?.name || clean
+    const headline = loaderData?.headline || 'Creator profile and printable CV'
+    const location = loaderData?.location ? ` in ${loaderData.location}` : ''
+    const title = `${name} (@${clean}) | Living Profile & Printable CV - Cvvd`
+    const description = `${headline}${location}. View living portfolio, work experience, projects, and publication-grade printable CV on Cvvd.`
     const profileUrl = `https://cvvd.vercel.app/${clean}`
+    const imageUrl =
+      loaderData?.avatarUrl || 'https://cvvd.vercel.app/og-image.png'
+
     return {
       meta: [
         { title },
         { name: 'description', content: description },
+        { name: 'author', content: name },
+        { name: 'creator', content: `@${clean}` },
+        { name: 'publisher', content: 'Cvvd' },
+        {
+          name: 'robots',
+          content:
+            'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+        },
         { property: 'og:site_name', content: 'Cvvd' },
         { property: 'og:type', content: 'profile' },
-        { property: 'og:title', content: title },
+        { property: 'og:title', content: `${name} (@${clean})` },
         { property: 'og:description', content: description },
         { property: 'og:url', content: profileUrl },
+        { property: 'og:locale', content: 'en_US' },
+        { property: 'og:image', content: imageUrl },
+        { property: 'og:image:secure_url', content: imageUrl },
+        { property: 'og:image:alt', content: `${name}'s profile photo` },
+        { property: 'profile:username', content: clean },
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: title },
+        { name: 'twitter:creator', content: `@${clean}` },
+        { name: 'twitter:title', content: `${name} (@${clean})` },
         { name: 'twitter:description', content: description },
+        { name: 'twitter:image', content: imageUrl },
+        { name: 'twitter:image:alt', content: `${name}'s profile photo` },
+      ],
+      links: [{ rel: 'canonical', href: profileUrl }],
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            name,
+            alternateName: clean,
+            jobTitle: headline,
+            description: loaderData?.summary || description,
+            image: imageUrl,
+            url: profileUrl,
+          }),
+        },
       ],
     }
   },
@@ -208,6 +282,9 @@ function ProfileHandlePage() {
     <div className="min-h-screen bg-[var(--backgroundColor)] text-[var(--grey1)] selection:bg-[var(--grey2)] selection:text-[var(--backgroundColor)] transition-colors duration-200">
       {/* Living CV Profile Render Engine */}
       <CVProfile />
+
+      {/* Floating Section Indicators and Anchors */}
+      <ProfileFloatingNav />
 
       {/* Persistent Sidebar with cvvd Platform navigation & CV Controls */}
       <Sidebar />

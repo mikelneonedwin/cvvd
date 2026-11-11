@@ -129,6 +129,7 @@ export interface PrintSettings {
   showAvatarInPrint: boolean
   includeLinksInPrint: boolean
   layoutPreset: LayoutPreset
+  printTheme?: 'light' | 'dark'
 }
 
 export interface UserProfile {
