@@ -13,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dotenv": "^18.0.9",
     "@neondatabase/serverless": "^1.2.0",
     "@resvg/resvg-wasm": "^2.6.2",
     "@t3-oss/env-core": "^0.13.11",
