@@ -7,14 +7,14 @@ import {
   isSocialPlatform,
 } from '../../types/profile'
 import { CustomSelect } from '../CustomSelect'
-import { isReservedHandle } from '../../lib/reservedHandles'
+import { AvatarCropperModal } from '../AvatarCropperModal'
+import { useProfile } from '../../context/ProfileContext'
 
 interface StudioBasicsProps {
   form: UserProfile
   setForm: (val: UserProfile) => void
-  setRawHandle: (val: string) => void
   uploadingAvatar: boolean
-  onAvatarUpload: (file: File) => void
+  onAvatarSave: (dataUrl: string) => Promise<void> | void
 }
 
 const PLATFORM_DEFAULTS: Record<
@@ -67,17 +67,25 @@ function deriveSuggestedLabel(url: string, platform: SocialPlatform): string {
   }
   // Try extracting username or hostname
   try {
-    const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+    const withProtocol = /^https?:\/\//i.test(trimmed)
+      ? trimmed
+      : `https://${trimmed}`
     const parsed = new URL(withProtocol)
     const pathname = parsed.pathname.replace(/^\/+|\/+$/g, '')
-    if (platform === 'github' || platform === 'twitter' || platform === 'linkedin') {
+    if (
+      platform === 'github' ||
+      platform === 'twitter' ||
+      platform === 'linkedin'
+    ) {
       const parts = pathname.split('/')
       const handlePart = parts[parts.length - 1]
       if (handlePart) {
         return platform === 'twitter' ? `@${handlePart}` : handlePart
       }
     }
-    return parsed.hostname.replace(/^www\./, '') || PLATFORM_DEFAULTS[platform].label
+    return (
+      parsed.hostname.replace(/^www\./, '') || PLATFORM_DEFAULTS[platform].label
+    )
   } catch {
     return PLATFORM_DEFAULTS[platform].label
   }
@@ -86,12 +94,13 @@ function deriveSuggestedLabel(url: string, platform: SocialPlatform): string {
 export function StudioBasics({
   form,
   setForm,
-  setRawHandle,
   uploadingAvatar,
-  onAvatarUpload,
+  onAvatarSave,
 }: StudioBasicsProps) {
+  const { showToast } = useProfile()
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [newlyAddedLinkId, setNewlyAddedLinkId] = useState<string | null>(null)
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null)
   const urlInputsRef = useRef<Map<string, HTMLInputElement>>(new Map())
 
   useEffect(() => {
@@ -103,6 +112,7 @@ export function StudioBasics({
         const len = input.value.length
         input.setSelectionRange(len, len)
       }
+      // oxlint-disable-next-line react/set-state-in-effect -- clear one-shot focus marker after DOM focus
       setNewlyAddedLinkId(null)
     }
   }, [newlyAddedLinkId])
@@ -114,13 +124,13 @@ export function StudioBasics({
 
     // If current url is empty or was just another platform's prefix, update url to new prefix
     const isOldPrefix = Object.values(PLATFORM_DEFAULTS).some(
-      (p) => cur.url === p.urlPrefix || cur.url === ''
+      (p) => cur.url === p.urlPrefix || cur.url === '',
     )
     const newUrl = isOldPrefix ? def.urlPrefix : cur.url
 
     // If current label is empty or matches an old default label, update to recommended label
     const isOldDefaultLabel = Object.values(PLATFORM_DEFAULTS).some(
-      (p) => cur.label === p.label || cur.label === ''
+      (p) => cur.label === p.label || cur.label === '',
     )
     const newLabel = isOldDefaultLabel ? def.label : cur.label
 
@@ -202,7 +212,8 @@ export function StudioBasics({
               Profile Photo / Avatar
             </div>
             <p className="text-[11px] text-[var(--grey3)] mt-0.5">
-              Square PNG, JPG, or SVG up to 2MB. Saved directly to your database profile.
+              Pick an image, crop it to a 1:1 square, and save it to your local
+              profile.
             </p>
           </div>
         </div>
@@ -215,7 +226,23 @@ export function StudioBasics({
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
-              if (file) onAvatarUpload(file)
+              e.target.value = ''
+              if (!file) return
+              if (!file.type.startsWith('image/')) {
+                showToast('Please choose an image file')
+                return
+              }
+              if (file.size > 10 * 1024 * 1024) {
+                showToast('Please choose an image under 10MB')
+                return
+              }
+              const reader = new FileReader()
+              reader.onload = () => {
+                if (typeof reader.result === 'string') {
+                  setCropImageSrc(reader.result)
+                }
+              }
+              reader.readAsDataURL(file)
             }}
           />
           <button
@@ -230,60 +257,33 @@ export function StudioBasics({
         </div>
       </div>
 
-      {/* Primary Identity: Name & Handle */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-mono text-[var(--grey3)] uppercase tracking-wider mb-1.5">
-            Full Name
-          </label>
-          <input
-            type="text"
-            value={form.basics.name}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                basics: { ...form.basics, name: e.target.value },
-              })
-            }
-            className="w-full px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm text-[var(--grey1)] focus:outline-none focus:ring-1 focus:ring-[var(--grey1)] transition-colors"
-          />
-        </div>
+      {cropImageSrc && (
+        <AvatarCropperModal
+          imageSrc={cropImageSrc}
+          onClose={() => setCropImageSrc(null)}
+          onComplete={async (dataUrl) => {
+            await onAvatarSave(dataUrl)
+            setCropImageSrc(null)
+          }}
+        />
+      )}
 
-        <div>
-          <label className="block text-xs font-mono text-[var(--grey3)] uppercase tracking-wider mb-1.5">
-            Handle
-          </label>
-          <div className={`flex items-center rounded-xl border bg-[var(--backgroundColor)] px-3.5 min-h-[44px] focus-within:ring-1 ${
-            isReservedHandle(form.basics.handle)
-              ? 'border-rose-400 focus-within:ring-rose-500'
-              : 'border-[var(--secondaryBorderColor)] focus-within:ring-[var(--grey1)]'
-          }`}>
-            <span className="text-sm font-mono text-[var(--grey3)] select-none">
-              cvvd/u/
-            </span>
-            <input
-              type="text"
-              value={form.basics.handle.replace(/^cvvd\/u\//, '').replace(/^cvvd\//, '').replace(/^u\//, '')}
-              onChange={(e) => {
-                const clean = e.target.value
-                  .toLowerCase()
-                  .replace(/[^a-z0-9_-]/g, '')
-                  .slice(0, 32)
-                setRawHandle(clean)
-                setForm({
-                  ...form,
-                  basics: { ...form.basics, handle: `cvvd/u/${clean}` },
-                })
-              }}
-              className="w-full py-2.5 pl-1 bg-transparent text-sm font-mono text-[var(--grey1)] focus:outline-none"
-            />
-          </div>
-          {isReservedHandle(form.basics.handle) && (
-            <p className="mt-1 text-[11px] text-rose-500 font-mono">
-              "{form.basics.handle.replace(/^cvvd\/u\//, '').replace(/^cvvd\//, '')}" is a reserved system route.
-            </p>
-          )}
-        </div>
+      {/* Primary Identity */}
+      <div>
+        <label className="block text-xs font-mono text-[var(--grey3)] uppercase tracking-wider mb-1.5">
+          Full Name
+        </label>
+        <input
+          type="text"
+          value={form.basics.name}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              basics: { ...form.basics, name: e.target.value },
+            })
+          }
+          className="w-full px-3.5 min-h-[44px] rounded-xl border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-sm text-[var(--grey1)] focus:outline-none focus:ring-1 focus:ring-[var(--grey1)] transition-colors"
+        />
       </div>
 
       {/* Headline */}
@@ -458,7 +458,12 @@ export function StudioBasics({
                 onChange={(e) => {
                   let val = e.target.value
                   // For email, ensure silent mailto prefix handling
-                  if (link.platform === 'email' && val && !val.startsWith('mailto:') && val.includes('@')) {
+                  if (
+                    link.platform === 'email' &&
+                    val &&
+                    !val.startsWith('mailto:') &&
+                    val.includes('@')
+                  ) {
                     val = `mailto:${val}`
                   }
                   const updated = [...form.basics.links]
@@ -468,7 +473,9 @@ export function StudioBasics({
                     basics: { ...form.basics, links: updated },
                   })
                 }}
-                placeholder={PLATFORM_DEFAULTS[link.platform]?.placeholder || 'https://...'}
+                placeholder={
+                  PLATFORM_DEFAULTS[link.platform]?.placeholder || 'https://...'
+                }
                 className="px-3 min-h-[44px] rounded-lg border border-[var(--secondaryBorderColor)] bg-[var(--backgroundColor)] text-xs font-mono text-[var(--grey1)]"
               />
 
@@ -486,7 +493,7 @@ export function StudioBasics({
                 type="button"
                 onClick={() => {
                   const updated = form.basics.links.filter(
-                    (l) => l.id !== link.id
+                    (l) => l.id !== link.id,
                   )
                   setForm({
                     ...form,

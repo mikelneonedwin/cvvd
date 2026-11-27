@@ -6,60 +6,43 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "vite dev --port 3000",
-    "generate-routes": "tsr generate",
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start",
     "check-env": "node -r dotenv/config -e 'import(\"./src/env.ts\")'",
-    "build": "vite build",
-    "preview": "vite preview"
+    "pdf": "node --import tsx ./scripts/generate-pdf.ts",
+    "pdf:standalone": "node --import tsx ./scripts/generate-pdf-standalone.ts",
+    "prepare": "lefthook install"
   },
   "dependencies": {
-    "dotenv": "^18.0.9",
-    "@neondatabase/serverless": "^1.2.0",
-    "@resvg/resvg-wasm": "^2.6.2",
     "@t3-oss/env-core": "^0.13.11",
-    "@tailwindcss/vite": "^4.1.18",
-    "@tanstack/react-devtools": "0.10.14",
     "@tanstack/react-query": "^5.105.2",
-    "@tanstack/react-router": "1.170.46",
-    "@tanstack/react-router-devtools": "1.167.2",
-    "@tanstack/react-start": "^1.169.4",
     "@trpc/client": "^11.23.0",
     "@trpc/server": "^11.23.0",
     "@trpc/tanstack-react-query": "^11.23.0",
-    "@vercel/analytics": "^2.0.1",
-    "better-auth": "^1.7.15",
-    "cloudinary": "^2.11.0",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.45.4",
-    "drizzle-zod": "^0.8.3",
+    "dotenv": "^18.0.9",
     "lucide-react": "^1.66.0",
-    "nitro": "^3.0.261102-rc",
-    "nprogress": "^0.2.0",
-    "postgres": "^4.0.0",
+    "next": "^16.4.6",
+    "nextjs-toploader": "^3.9.17",
+    "playwright": "^1.55.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "satori": "^0.63.2",
+    "react-easy-crop": "^6.2.5",
     "tailwind-merge": "^3.7.0",
-    "tailwindcss": "^4.1.18",
+    "yaml": "^2.9.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@tanstack/devtools-vite": "0.8.6",
-    "@tanstack/router-cli": "^1.132.0",
-    "@tanstack/router-plugin": "1.168.48",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^22.10.2",
-    "@types/nprogress": "^0.2.3",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^6.0.1",
-    "drizzle-kit": "^0.31.11",
-    "typescript": "^6.0.2",
-    "vite": "^8.0.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "lightningcss"
-    ]
+    "lefthook": "^2.2.4",
+    "oxlint": "^1.95.0",
+    "prettier": "^3.10.1",
+    "tailwindcss": "^4.1.18",
+    "tsx": "^4.20.6",
+    "typescript": "^7.0.2"
   }
 }

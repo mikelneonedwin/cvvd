@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Printer, X, SlidersHorizontal, Sun, Moon } from 'lucide-react'
 import { useProfile } from '../context/ProfileContext'
+import { formatLinkDisplay } from '../lib/formatLink'
 import type { LayoutPreset } from '../types/profile'
 
 export function PrintPreviewModal() {
@@ -9,6 +10,8 @@ export function PrintPreviewModal() {
     isPreviewingPrint,
     setIsPreviewingPrint,
     triggerPrint,
+    generatePdf,
+    isGeneratingPdf,
     updatePrintSettings,
     updateSectionVisibility,
     showToast,
@@ -172,9 +175,11 @@ export function PrintPreviewModal() {
               {/* Authentic read.cv Tip Box */}
               <div className="p-3.5 sm:p-4 rounded-xl bg-[var(--inputBackgroundColor)] text-[13px] text-[var(--grey2)] leading-relaxed">
                 <p>
-                  <strong className="text-[var(--grey1)] font-medium">Tip ✨</strong>{' '}
-                  For best results we suggest turning off &quot;Headers and footers&quot; in
-                  your browser print settings.
+                  <strong className="text-[var(--grey1)] font-medium">
+                    Tip ✨
+                  </strong>{' '}
+                  For best results we suggest turning off &quot;Headers and
+                  footers&quot; in your browser print settings.
                 </p>
               </div>
 
@@ -231,7 +236,9 @@ export function PrintPreviewModal() {
                           </span>
                           <span className="text-[12px] text-[var(--grey3)]">
                             {isChecked ? 'On' : 'Off'}
-                            {sec.count !== undefined ? ` (${sec.count} items)` : ''}
+                            {sec.count !== undefined
+                              ? ` (${sec.count} items)`
+                              : ''}
                           </span>
                         </label>
 
@@ -295,7 +302,9 @@ export function PrintPreviewModal() {
                     >
                       <span
                         className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-[var(--backgroundColor)] shadow-sm ring-0 transition duration-200 ease-in-out ${
-                          printSettings.showAvatarInPrint ? 'translate-x-4' : 'translate-x-0'
+                          printSettings.showAvatarInPrint
+                            ? 'translate-x-4'
+                            : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -304,9 +313,13 @@ export function PrintPreviewModal() {
                   {/* Print Density */}
                   <div className="py-3 flex items-center justify-between gap-4">
                     <div className="min-w-0 pr-2">
-                      <div className="text-[14px] text-[var(--grey1)]">Print density</div>
+                      <div className="text-[14px] text-[var(--grey1)]">
+                        Print density
+                      </div>
                       <div className="text-[12px] text-[var(--grey3)]">
-                        {isCompact ? 'Compact typography and tight spacing' : 'Comfortable typography'}
+                        {isCompact
+                          ? 'Compact typography and tight spacing'
+                          : 'Comfortable typography'}
                       </div>
                     </div>
 
@@ -316,16 +329,21 @@ export function PrintPreviewModal() {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--grey1)] bg-[var(--inputBackgroundColor)] hover:bg-[var(--grey4)] transition-colors cursor-pointer shrink-0 whitespace-nowrap"
                     >
                       <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
-                      <span className="capitalize">{printSettings.density}</span>
+                      <span className="capitalize">
+                        {printSettings.density}
+                      </span>
                     </button>
                   </div>
 
                   {/* Print Color Theme: Light / Dark Mode */}
                   <div className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-t border-[var(--secondaryBorderColor)]">
                     <div className="min-w-0 pr-2">
-                      <div className="text-[14px] text-[var(--grey1)]">Print color theme</div>
+                      <div className="text-[14px] text-[var(--grey1)]">
+                        Print color theme
+                      </div>
                       <div className="text-[12px] text-[var(--grey3)]">
-                        Export as an authentic dark sheet or traditional light CV.
+                        Export as an authentic dark sheet or traditional light
+                        CV.
                       </div>
                     </div>
 
@@ -366,16 +384,26 @@ export function PrintPreviewModal() {
                     {/* Masthead */}
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <h1 className={`text-[16px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}>
+                        <h1
+                          className={`text-[16px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}
+                        >
                           {basics.name}
                         </h1>
-                        <p className={`text-[11px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal mt-0.5`}>
+                        <p
+                          className={`text-[11px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal mt-0.5`}
+                        >
                           {basics.headline}
-                          {basics.location && <span> in {basics.location}</span>}
+                          {basics.location && (
+                            <span> in {basics.location}</span>
+                          )}
                         </p>
-                        <div className={`flex flex-wrap items-center gap-2 pt-2 text-[10px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                        <div
+                          className={`flex flex-wrap items-center gap-2 pt-2 text-[10px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}
+                        >
                           {basics.links.map((link) => (
-                            <span key={link.id}>{link.label}</span>
+                            <span key={link.id}>
+                              {formatLinkDisplay(link.url, link.label)}
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -394,10 +422,14 @@ export function PrintPreviewModal() {
                     {/* Sections */}
                     {sectionVisibility.about && basics.summary && (
                       <div>
-                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                        <h2
+                          className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                        >
                           About
                         </h2>
-                        <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[10px] leading-relaxed`}>
+                        <p
+                          className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[10px] leading-relaxed`}
+                        >
                           {basics.summary}
                         </p>
                       </div>
@@ -405,22 +437,42 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.experience && experience.length > 0 && (
                       <div>
-                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                        <h2
+                          className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                        >
                           Work experience
                         </h2>
                         <div className="space-y-3">
                           {experience.map((item) => (
                             <div key={item.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
-                                  {item.role} <span className="font-normal text-neutral-400">at</span> {item.company}
-                                  {item.location && <span className="text-neutral-500 font-normal"> · {item.location}</span>}
+                                <div
+                                  className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                >
+                                  {item.role}{' '}
+                                  <span className="font-normal text-neutral-400">
+                                    at
+                                  </span>{' '}
+                                  {item.company}
+                                  {item.location && (
+                                    <span className="text-neutral-500 font-normal">
+                                      {' '}
+                                      · {item.location}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="text-neutral-500 font-mono text-[9.5px]">
-                                  {item.startDate} - {item.isCurrent ? 'Now' : item.endDate}
+                                  {item.startDate} -{' '}
+                                  {item.isCurrent ? 'Now' : item.endDate}
                                 </div>
                               </div>
-                              {item.summary && <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}>{item.summary}</p>}
+                              {item.summary && (
+                                <p
+                                  className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}
+                                >
+                                  {item.summary}
+                                </p>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -429,14 +481,18 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.projects && projects.length > 0 && (
                       <div>
-                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                        <h2
+                          className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                        >
                           Projects
                         </h2>
                         <div className="space-y-2">
                           {projects.map((proj) => (
                             <div key={proj.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
+                                <div
+                                  className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                >
                                   {proj.title}
                                   {proj.company && (
                                     <span className="text-neutral-500 font-normal ml-1">
@@ -444,9 +500,17 @@ export function PrintPreviewModal() {
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-neutral-500 font-mono text-[9.5px]">{proj.year}</div>
+                                <div className="text-neutral-500 font-mono text-[9.5px]">
+                                  {proj.year}
+                                </div>
                               </div>
-                              {proj.description && <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5`}>{proj.description}</p>}
+                              {proj.description && (
+                                <p
+                                  className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5`}
+                                >
+                                  {proj.description}
+                                </p>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -455,17 +519,29 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.writing && writing.length > 0 && (
                       <div>
-                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                        <h2
+                          className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                        >
                           Writing
                         </h2>
                         <div className="space-y-2">
                           {writing.map((w) => (
                             <div key={w.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{w.title}</div>
-                                <div className="text-neutral-500 font-mono text-[9.5px]">{w.year}</div>
+                                <div
+                                  className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                >
+                                  {w.title}
+                                </div>
+                                <div className="text-neutral-500 font-mono text-[9.5px]">
+                                  {w.year}
+                                </div>
                               </div>
-                              {w.publication && <div className="text-neutral-500 text-[9px]">{w.publication}</div>}
+                              {w.publication && (
+                                <div className="text-neutral-500 text-[9px]">
+                                  {w.publication}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -474,17 +550,29 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.education && education.length > 0 && (
                       <div>
-                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                        <h2
+                          className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                        >
                           Education
                         </h2>
                         <div className="space-y-2">
                           {education.map((edu) => (
                             <div key={edu.id} className="text-[10px]">
                               <div className="flex justify-between items-baseline">
-                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{edu.degree} at {edu.institution}</div>
-                                <div className="text-neutral-500 font-mono text-[9.5px]">{edu.startYear} - {edu.endYear}</div>
+                                <div
+                                  className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                >
+                                  {edu.degree} at {edu.institution}
+                                </div>
+                                <div className="text-neutral-500 font-mono text-[9.5px]">
+                                  {edu.startYear} - {edu.endYear}
+                                </div>
                               </div>
-                              {edu.field && <div className="text-neutral-500 text-[9px]">{edu.field}</div>}
+                              {edu.field && (
+                                <div className="text-neutral-500 text-[9px]">
+                                  {edu.field}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -493,14 +581,24 @@ export function PrintPreviewModal() {
 
                     {sectionVisibility.skills && skillCategories.length > 0 && (
                       <div>
-                        <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                        <h2
+                          className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                        >
                           Skills
                         </h2>
                         <div className="space-y-1 text-[10px]">
                           {skillCategories.map((cat) => (
                             <div key={cat.id}>
-                              <span className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mr-2`}>{cat.name}:</span>
-                              <span className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>{cat.skills.join(', ')}</span>
+                              <span
+                                className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mr-2`}
+                              >
+                                {cat.name}:
+                              </span>
+                              <span
+                                className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}
+                              >
+                                {cat.skills.join(', ')}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -524,95 +622,154 @@ export function PrintPreviewModal() {
                         </div>
                       )}
                       <div>
-                        <h1 className={`text-[13px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}>
+                        <h1
+                          className={`text-[13px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}
+                        >
                           {basics.name}
                         </h1>
-                        <p className={`text-[9.5px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal mt-0.5`}>
+                        <p
+                          className={`text-[9.5px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal mt-0.5`}
+                        >
                           {basics.headline}
                         </p>
                       </div>
 
-                      <div className={`space-y-1 text-[9px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                      <div
+                        className={`space-y-1 text-[9px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}
+                      >
                         {basics.links.map((link) => (
                           <div key={link.id} className="truncate">
-                            <span>{link.label}</span>
+                            <span>
+                              {formatLinkDisplay(link.url, link.label)}
+                            </span>
                           </div>
                         ))}
                       </div>
 
                       {sectionVisibility.education && education.length > 0 && (
                         <div className="pt-2">
-                          <h2 className={`text-[10px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                          <h2
+                            className={`text-[10px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                          >
                             Education
                           </h2>
                           <div className="space-y-2 text-[9px]">
                             {education.map((edu) => (
                               <div key={edu.id}>
-                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{edu.degree}</div>
-                                <div className="text-neutral-500">{edu.institution}</div>
-                                <div className="text-neutral-400 font-mono">{edu.startYear} - {edu.endYear}</div>
+                                <div
+                                  className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                >
+                                  {edu.degree}
+                                </div>
+                                <div className="text-neutral-500">
+                                  {edu.institution}
+                                </div>
+                                <div className="text-neutral-400 font-mono">
+                                  {edu.startYear} - {edu.endYear}
+                                </div>
                               </div>
                             ))}
                           </div>
                         </div>
                       )}
 
-                      {sectionVisibility.skills && skillCategories.length > 0 && (
-                        <div className="pt-2">
-                          <h2 className={`text-[10px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
-                            Skills
-                          </h2>
-                          <div className="space-y-1.5 text-[9px]">
-                            {skillCategories.map((cat) => (
-                              <div key={cat.id}>
-                                <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{cat.name}</div>
-                                <div className={`${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal`}>{cat.skills.join(', ')}</div>
-                              </div>
-                            ))}
+                      {sectionVisibility.skills &&
+                        skillCategories.length > 0 && (
+                          <div className="pt-2">
+                            <h2
+                              className={`text-[10px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                            >
+                              Skills
+                            </h2>
+                            <div className="space-y-1.5 text-[9px]">
+                              {skillCategories.map((cat) => (
+                                <div key={cat.id}>
+                                  <div
+                                    className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                  >
+                                    {cat.name}
+                                  </div>
+                                  <div
+                                    className={`${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal`}
+                                  >
+                                    {cat.skills.join(', ')}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
 
                     {/* Right Column: Narrative Experience */}
                     <div className="space-y-4">
                       {sectionVisibility.about && basics.summary && (
                         <div>
-                          <h2 className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>About</h2>
-                          <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[9.5px] leading-relaxed`}>
+                          <h2
+                            className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                          >
+                            About
+                          </h2>
+                          <p
+                            className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[9.5px] leading-relaxed`}
+                          >
                             {basics.summary}
                           </p>
                         </div>
                       )}
 
-                      {sectionVisibility.experience && experience.length > 0 && (
-                        <div>
-                          <h2 className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>Work experience</h2>
-                          <div className="space-y-2.5">
-                            {experience.map((item) => (
-                              <div key={item.id} className="text-[9.5px]">
-                                <div className="flex justify-between items-baseline">
-                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{item.role}</div>
-                                  <div className="text-neutral-400 font-mono text-[8.5px]">
-                                    {item.startDate} - {item.isCurrent ? 'Now' : item.endDate}
+                      {sectionVisibility.experience &&
+                        experience.length > 0 && (
+                          <div>
+                            <h2
+                              className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                            >
+                              Work experience
+                            </h2>
+                            <div className="space-y-2.5">
+                              {experience.map((item) => (
+                                <div key={item.id} className="text-[9.5px]">
+                                  <div className="flex justify-between items-baseline">
+                                    <div
+                                      className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                    >
+                                      {item.role}
+                                    </div>
+                                    <div className="text-neutral-400 font-mono text-[8.5px]">
+                                      {item.startDate} -{' '}
+                                      {item.isCurrent ? 'Now' : item.endDate}
+                                    </div>
                                   </div>
+                                  <div className="text-neutral-500">
+                                    {item.company}
+                                  </div>
+                                  {item.summary && (
+                                    <p
+                                      className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}
+                                    >
+                                      {item.summary}
+                                    </p>
+                                  )}
                                 </div>
-                                <div className="text-neutral-500">{item.company}</div>
-                                {item.summary && <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}>{item.summary}</p>}
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
                       {sectionVisibility.projects && projects.length > 0 && (
                         <div>
-                          <h2 className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>Projects</h2>
+                          <h2
+                            className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                          >
+                            Projects
+                          </h2>
                           <div className="space-y-2 text-[9.5px]">
                             {projects.map((proj) => (
                               <div key={proj.id}>
                                 <div className="flex justify-between items-baseline">
-                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
+                                  <div
+                                    className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                  >
                                     {proj.title}
                                     {proj.company && (
                                       <span className="text-neutral-500 font-normal ml-1">
@@ -620,9 +777,17 @@ export function PrintPreviewModal() {
                                       </span>
                                     )}
                                   </div>
-                                  <div className="text-neutral-400 font-mono text-[8.5px]">{proj.year}</div>
+                                  <div className="text-neutral-400 font-mono text-[8.5px]">
+                                    {proj.year}
+                                  </div>
                                 </div>
-                                {proj.description && <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5`}>{proj.description}</p>}
+                                {proj.description && (
+                                  <p
+                                    className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5`}
+                                  >
+                                    {proj.description}
+                                  </p>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -631,15 +796,29 @@ export function PrintPreviewModal() {
 
                       {sectionVisibility.writing && writing.length > 0 && (
                         <div>
-                          <h2 className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>Writing</h2>
+                          <h2
+                            className={`text-[10.5px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                          >
+                            Writing
+                          </h2>
                           <div className="space-y-2 text-[9.5px]">
                             {writing.map((w) => (
                               <div key={w.id}>
                                 <div className="flex justify-between items-baseline">
-                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{w.title}</div>
-                                  <div className="text-neutral-400 font-mono text-[8.5px]">{w.year}</div>
+                                  <div
+                                    className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                  >
+                                    {w.title}
+                                  </div>
+                                  <div className="text-neutral-400 font-mono text-[8.5px]">
+                                    {w.year}
+                                  </div>
                                 </div>
-                                {w.publication && <div className="text-neutral-500 text-[8.5px]">{w.publication}</div>}
+                                {w.publication && (
+                                  <div className="text-neutral-500 text-[8.5px]">
+                                    {w.publication}
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -663,17 +842,25 @@ export function PrintPreviewModal() {
                           />
                         </div>
                       )}
-                      <h1 className={`text-[13px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}>
+                      <h1
+                        className={`text-[13px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} leading-tight`}
+                      >
                         {basics.name}
                       </h1>
-                      <p className={`text-[10px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal`}>
+                      <p
+                        className={`text-[10px] ${isDarkDoc ? 'text-neutral-400' : 'text-neutral-600'} leading-normal`}
+                      >
                         {basics.headline}
                         {basics.location && <span> in {basics.location}</span>}
                       </p>
-                      <div className={`pt-2 space-y-1 text-[9.5px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                      <div
+                        className={`pt-2 space-y-1 text-[9.5px] ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}
+                      >
                         {basics.links.map((link) => (
                           <div key={link.id} className="truncate">
-                            <span>{link.label}</span>
+                            <span>
+                              {formatLinkDisplay(link.url, link.label)}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -684,64 +871,88 @@ export function PrintPreviewModal() {
                       {/* About */}
                       {sectionVisibility.about && basics.summary && (
                         <div>
-                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                          <h2
+                            className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                          >
                             About
                           </h2>
-                          <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[10px] leading-relaxed`}>
+                          <p
+                            className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} text-[10px] leading-relaxed`}
+                          >
                             {basics.summary}
                           </p>
                         </div>
                       )}
 
                       {/* Work Experience */}
-                      {sectionVisibility.experience && experience.length > 0 && (
-                        <div>
-                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
-                            Work experience
-                          </h2>
-                          <div className="space-y-3">
-                            {experience.map((item) => (
-                              <div key={item.id} className="flex items-start text-[10px]">
-                                <div className="w-16 shrink-0 text-right pr-3 text-neutral-500 font-mono text-[9px] pt-0.5">
-                                  {item.startDate} - {item.isCurrent ? 'Now' : item.endDate}
-                                </div>
-                                <div className="flex-1">
-                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
-                                    {item.role}{' '}
-                                    <span className="text-neutral-400 font-normal">at</span>{' '}
-                                    {item.company}
+                      {sectionVisibility.experience &&
+                        experience.length > 0 && (
+                          <div>
+                            <h2
+                              className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                            >
+                              Work experience
+                            </h2>
+                            <div className="space-y-3">
+                              {experience.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="flex items-start text-[10px]"
+                                >
+                                  <div className="w-16 shrink-0 text-right pr-3 text-neutral-500 font-mono text-[9px] pt-0.5">
+                                    {item.startDate} -{' '}
+                                    {item.isCurrent ? 'Now' : item.endDate}
                                   </div>
-                                  {item.location && (
-                                    <div className="text-neutral-500 text-[9px]">
-                                      {item.location}
+                                  <div className="flex-1">
+                                    <div
+                                      className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                    >
+                                      {item.role}{' '}
+                                      <span className="text-neutral-400 font-normal">
+                                        at
+                                      </span>{' '}
+                                      {item.company}
                                     </div>
-                                  )}
-                                  {item.summary && (
-                                    <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}>
-                                      {item.summary}
-                                    </p>
-                                  )}
+                                    {item.location && (
+                                      <div className="text-neutral-500 text-[9px]">
+                                        {item.location}
+                                      </div>
+                                    )}
+                                    {item.summary && (
+                                      <p
+                                        className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}
+                                      >
+                                        {item.summary}
+                                      </p>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
                       {/* Projects */}
                       {sectionVisibility.projects && projects.length > 0 && (
                         <div>
-                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                          <h2
+                            className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                          >
                             Projects
                           </h2>
                           <div className="space-y-2">
                             {projects.map((proj) => (
-                              <div key={proj.id} className="flex items-start text-[10px]">
+                              <div
+                                key={proj.id}
+                                className="flex items-start text-[10px]"
+                              >
                                 <div className="w-16 shrink-0 text-right pr-3 text-neutral-500 font-mono text-[9px] pt-0.5">
                                   {proj.year}
                                 </div>
                                 <div className="flex-1">
-                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
+                                  <div
+                                    className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                  >
                                     {proj.title}
                                     {proj.company && (
                                       <span className="text-neutral-500 font-normal ml-1">
@@ -750,7 +961,9 @@ export function PrintPreviewModal() {
                                     )}
                                   </div>
                                   {proj.description && (
-                                    <p className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}>
+                                    <p
+                                      className={`${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'} mt-0.5 leading-normal`}
+                                    >
                                       {proj.description}
                                     </p>
                                   )}
@@ -764,17 +977,26 @@ export function PrintPreviewModal() {
                       {/* Writing */}
                       {sectionVisibility.writing && writing.length > 0 && (
                         <div>
-                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                          <h2
+                            className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                          >
                             Writing
                           </h2>
                           <div className="space-y-1.5">
                             {writing.map((w) => (
-                              <div key={w.id} className="flex items-start text-[10px]">
+                              <div
+                                key={w.id}
+                                className="flex items-start text-[10px]"
+                              >
                                 <div className="w-16 shrink-0 text-right pr-3 text-neutral-500 font-mono text-[9px] pt-0.5">
                                   {w.year}
                                 </div>
                                 <div className="flex-1">
-                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>{w.title}</div>
+                                  <div
+                                    className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                  >
+                                    {w.title}
+                                  </div>
                                   {w.publication && (
                                     <div className="text-neutral-500 text-[9px]">
                                       {w.publication}
@@ -790,19 +1012,28 @@ export function PrintPreviewModal() {
                       {/* Education */}
                       {sectionVisibility.education && education.length > 0 && (
                         <div>
-                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
+                          <h2
+                            className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                          >
                             Education
                           </h2>
                           <div className="space-y-2">
                             {education.map((edu) => (
-                              <div key={edu.id} className="flex items-start text-[10px]">
+                              <div
+                                key={edu.id}
+                                className="flex items-start text-[10px]"
+                              >
                                 <div className="w-16 shrink-0 text-right pr-3 text-neutral-500 font-mono text-[9px] pt-0.5">
                                   {edu.startYear} - {edu.endYear}
                                 </div>
                                 <div className="flex-1">
-                                  <div className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}>
+                                  <div
+                                    className={`font-medium ${isDarkDoc ? 'text-white' : 'text-black'}`}
+                                  >
                                     {edu.degree}{' '}
-                                    <span className="text-neutral-400 font-normal">at</span>{' '}
+                                    <span className="text-neutral-400 font-normal">
+                                      at
+                                    </span>{' '}
                                     {edu.institution}
                                   </div>
                                   {edu.field && (
@@ -818,25 +1049,33 @@ export function PrintPreviewModal() {
                       )}
 
                       {/* Skills */}
-                      {sectionVisibility.skills && skillCategories.length > 0 && (
-                        <div>
-                          <h2 className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}>
-                            Skills
-                          </h2>
-                          <div className="space-y-1">
-                            {skillCategories.map((cat) => (
-                              <div key={cat.id} className="flex items-start text-[10px]">
-                                <div className="w-16 shrink-0 text-right pr-3 text-neutral-500 font-mono text-[9px] pt-0.5">
-                                  {cat.name}
+                      {sectionVisibility.skills &&
+                        skillCategories.length > 0 && (
+                          <div>
+                            <h2
+                              className={`text-[11px] font-medium ${isDarkDoc ? 'text-white' : 'text-black'} mb-1`}
+                            >
+                              Skills
+                            </h2>
+                            <div className="space-y-1">
+                              {skillCategories.map((cat) => (
+                                <div
+                                  key={cat.id}
+                                  className="flex items-start text-[10px]"
+                                >
+                                  <div className="w-16 shrink-0 text-right pr-3 text-neutral-500 font-mono text-[9px] pt-0.5">
+                                    {cat.name}
+                                  </div>
+                                  <div
+                                    className={`flex-1 ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}
+                                  >
+                                    {cat.skills.join(', ')}
+                                  </div>
                                 </div>
-                                <div className={`flex-1 ${isDarkDoc ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                  {cat.skills.join(', ')}
-                                </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   </div>
                 )}
@@ -865,10 +1104,19 @@ export function PrintPreviewModal() {
               onClick={() => {
                 triggerPrint()
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-colors shadow-sm cursor-pointer"
+              className="px-3.5 py-2 rounded-lg text-[13px] text-[var(--grey2)] hover:text-[var(--grey1)] hover:bg-[var(--transparentBorder)] transition-colors cursor-pointer"
+            >
+              Browser print
+            </button>
+
+            <button
+              type="button"
+              onClick={() => void generatePdf()}
+              disabled={isGeneratingPdf}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-colors shadow-sm cursor-pointer disabled:opacity-50"
             >
               <Printer className="w-4 h-4" />
-              <span>Print sheet</span>
+              <span>{isGeneratingPdf ? 'Generating...' : 'Generate PDF'}</span>
             </button>
           </div>
         </div>

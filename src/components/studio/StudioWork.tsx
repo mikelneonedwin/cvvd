@@ -19,6 +19,7 @@ export function StudioWork({ form, setForm }: StudioWorkProps) {
   })
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- sync local tech input cache for newly added items
     setTechInputs((prev) => {
       const updated = { ...prev }
       form.experience.forEach((item) => {

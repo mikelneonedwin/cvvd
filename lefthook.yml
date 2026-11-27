@@ -1,0 +1,24 @@
+pre-commit:
+  parallel: true
+  commands:
+    oxlint:
+      glob: '*.{js,jsx,ts,tsx,mjs,cjs}'
+      run: bunx oxlint -c .oxlintrc.json --fix {staged_files}
+      stage_fixed: true
+    prettier:
+      glob: '*.{js,jsx,ts,tsx,mjs,cjs,json,css,md,yml,yaml}'
+      run: bunx prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+    typecheck:
+      run: bunx tsc --noEmit
+      stage_fixed: true
+    validate-profile:
+      run: bun run scripts/validate-profile.ts
+
+pre-push:
+  parallel: true
+  commands:
+    build:
+      run: bun run build
+    pdf:
+      run: bash scripts/generate-pdf-if-changed.sh
