@@ -1,8 +1,2 @@
 User-agent: *
-Allow: /
-
-# Disallow private user editing areas and internal APIs from search engine indexing
-Disallow: /edit
-Disallow: /api/
-
-Sitemap: https://cvvd.vercel.app/sitemap.xml
+Disallow: /

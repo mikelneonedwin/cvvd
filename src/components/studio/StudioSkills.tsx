@@ -21,7 +21,9 @@ function SkillCategoryRow({
   const [rawSkills, setRawSkills] = useState(() => cat.skills.join(', '))
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- reset local draft when category identity changes
     setRawSkills(cat.skills.join(', '))
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [cat.id])
 
   const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>) => {

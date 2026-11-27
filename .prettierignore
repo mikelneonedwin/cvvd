@@ -1,0 +1,8 @@
+node_modules
+.next
+.next-pdf*
+public
+data
+bun.lock
+cvvd.db
+tsconfig.tsbuildinfo

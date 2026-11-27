@@ -1,4 +1,5 @@
 import { useProfile } from '../context/ProfileContext'
+import { formatLinkDisplay } from '../lib/formatLink'
 import { SupporterHeartIcon, ArrowExternalIcon } from './ReadCvIcons'
 
 export function ProfileHero() {
@@ -51,17 +52,24 @@ export function ProfileHero() {
             {basics.links.map((link) => {
               const isEmail = link.platform === 'email'
               const href = isEmail
-                ? (link.url.startsWith('mailto:') ? link.url : `mailto:${link.url}`)
+                ? link.url.startsWith('mailto:')
+                  ? link.url
+                  : `mailto:${link.url}`
                 : link.url
+              const displayText = formatLinkDisplay(link.url, link.label)
               return (
                 <a
                   key={link.id}
                   href={href}
                   {...(!isEmail ? { target: '_blank', rel: 'noreferrer' } : {})}
-                  aria-label={isEmail ? `Send email to ${link.label}` : `Open link: ${link.label}`}
+                  aria-label={
+                    isEmail
+                      ? `Send email to ${displayText}`
+                      : `Open link: ${displayText}`
+                  }
                   className="readcv-badge text-[12px] py-1 px-2.5 max-w-full hover:border-[var(--grey3)] transition-colors group text-left"
                 >
-                  <span className="truncate">{link.label}</span>
+                  <span className="truncate">{displayText}</span>
                   {!isEmail && (
                     <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors shrink-0" />
                   )}
@@ -100,7 +108,10 @@ export function ProfileHero() {
             <p className="readcv-headline text-[14px] text-[var(--grey2)] mt-0.5 leading-normal">
               {basics.headline}
               {basics.location && (
-                <span className="text-[var(--grey3)]"> in {basics.location}</span>
+                <span className="text-[var(--grey3)]">
+                  {' '}
+                  in {basics.location}
+                </span>
               )}
             </p>
           </div>
@@ -120,17 +131,24 @@ export function ProfileHero() {
           {basics.links.map((link) => {
             const isEmail = link.platform === 'email'
             const href = isEmail
-              ? (link.url.startsWith('mailto:') ? link.url : `mailto:${link.url}`)
+              ? link.url.startsWith('mailto:')
+                ? link.url
+                : `mailto:${link.url}`
               : link.url
+            const displayText = formatLinkDisplay(link.url, link.label)
             return (
               <a
                 key={link.id}
                 href={href}
                 {...(!isEmail ? { target: '_blank', rel: 'noreferrer' } : {})}
-                aria-label={isEmail ? `Send email to ${link.label}` : `Open link: ${link.label}`}
+                aria-label={
+                  isEmail
+                    ? `Send email to ${displayText}`
+                    : `Open link: ${displayText}`
+                }
                 className="readcv-badge text-[12px] hover:border-[var(--grey3)] transition-colors group"
               >
-                <span>{link.label}</span>
+                <span>{displayText}</span>
                 {!isEmail && (
                   <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors" />
                 )}
@@ -185,17 +203,24 @@ export function ProfileHero() {
           {basics.links.map((link) => {
             const isEmail = link.platform === 'email'
             const href = isEmail
-              ? (link.url.startsWith('mailto:') ? link.url : `mailto:${link.url}`)
+              ? link.url.startsWith('mailto:')
+                ? link.url
+                : `mailto:${link.url}`
               : link.url
+            const displayText = formatLinkDisplay(link.url, link.label)
             return (
               <a
                 key={link.id}
                 href={href}
                 {...(!isEmail ? { target: '_blank', rel: 'noreferrer' } : {})}
-                aria-label={isEmail ? `Send email to ${link.label}` : `Open link: ${link.label}`}
+                aria-label={
+                  isEmail
+                    ? `Send email to ${displayText}`
+                    : `Open link: ${displayText}`
+                }
                 className="readcv-badge hover:border-[var(--grey3)] transition-colors group"
               >
-                <span>{link.label}</span>
+                <span>{displayText}</span>
                 {!isEmail && (
                   <ArrowExternalIcon className="w-2.5 h-2.5 text-[var(--grey3)] group-hover:text-[var(--grey1)] transition-colors" />
                 )}

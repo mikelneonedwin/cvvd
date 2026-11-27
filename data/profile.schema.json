@@ -1,0 +1,408 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "basics": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "handle": {
+          "type": "string"
+        },
+        "headline": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "status": {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "available",
+                "employed",
+                "freelance",
+                "busy"
+              ]
+            },
+            "label": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "location": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "platform": {
+                "type": "string",
+                "enum": [
+                  "website",
+                  "github",
+                  "twitter",
+                  "linkedin",
+                  "email",
+                  "other"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "platform",
+              "label",
+              "url"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "name",
+        "handle",
+        "headline",
+        "avatarUrl",
+        "status",
+        "location",
+        "timezone",
+        "summary",
+        "links"
+      ],
+      "additionalProperties": false
+    },
+    "experience": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "isCurrent": {
+            "type": "boolean"
+          },
+          "location": {
+            "type": "string"
+          },
+          "employmentType": {
+            "type": "string",
+            "enum": [
+              "Full-time",
+              "Contract",
+              "Part-time",
+              "Advisory"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "technologies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "link": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "role",
+          "startDate",
+          "endDate",
+          "isCurrent",
+          "location",
+          "employmentType",
+          "summary",
+          "highlights",
+          "technologies",
+          "link"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "year": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "technologies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "tagline",
+          "description",
+          "year",
+          "link",
+          "technologies",
+          "featured",
+          "imageUrl"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "writing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "publication": {
+            "type": "string"
+          },
+          "year": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "publication",
+          "year",
+          "url",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "education": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "institution": {
+            "type": "string"
+          },
+          "degree": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "startYear": {
+            "type": "string"
+          },
+          "endYear": {
+            "type": "string"
+          },
+          "honors": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "institution",
+          "degree",
+          "field",
+          "startYear",
+          "endYear",
+          "honors"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "skillCategories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "skills"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "sectionVisibility": {
+      "type": "object",
+      "properties": {
+        "about": {
+          "type": "boolean"
+        },
+        "experience": {
+          "type": "boolean"
+        },
+        "projects": {
+          "type": "boolean"
+        },
+        "writing": {
+          "type": "boolean"
+        },
+        "education": {
+          "type": "boolean"
+        },
+        "skills": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "about",
+        "experience",
+        "projects",
+        "writing",
+        "education",
+        "skills"
+      ],
+      "additionalProperties": false
+    },
+    "printSettings": {
+      "type": "object",
+      "properties": {
+        "density": {
+          "type": "string",
+          "enum": [
+            "comfortable",
+            "compact"
+          ]
+        },
+        "showAvatarInPrint": {
+          "type": "boolean"
+        },
+        "includeLinksInPrint": {
+          "type": "boolean"
+        },
+        "layoutPreset": {
+          "type": "string",
+          "enum": [
+            "editorial",
+            "single-column",
+            "balanced"
+          ]
+        },
+        "printTheme": {
+          "type": "string",
+          "enum": [
+            "light",
+            "dark"
+          ]
+        }
+      },
+      "required": [
+        "density",
+        "showAvatarInPrint",
+        "includeLinksInPrint",
+        "layoutPreset"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "basics",
+    "experience",
+    "projects",
+    "writing",
+    "education",
+    "skillCategories",
+    "sectionVisibility",
+    "printSettings"
+  ],
+  "additionalProperties": false
+}

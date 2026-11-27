@@ -1,11 +1,15 @@
+'use client'
+
 import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   useCallback,
   type ReactNode,
 } from 'react'
+import { trpcClient } from '../trpc/client'
 import type {
   EducationItem,
   LayoutPreset,
@@ -29,6 +33,7 @@ interface ProfileContextValue {
   setIsEditing: (editing: boolean) => void
   isPreviewingPrint: boolean
   setIsPreviewingPrint: (preview: boolean) => void
+  isGeneratingPdf: boolean
   toastMessage: string | null
   showToast: (msg: string) => void
   updateBasics: (basics: Partial<ProfileBasics>) => void
@@ -44,6 +49,7 @@ interface ProfileContextValue {
   importProfile: (data: UserProfile) => void
   exportProfileJson: () => void
   triggerPrint: () => void
+  generatePdf: () => Promise<void>
 }
 
 const ProfileContext = createContext<ProfileContextValue | undefined>(undefined)
@@ -53,8 +59,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     let savedLayout: LayoutPreset | undefined
     try {
       if (typeof window !== 'undefined') {
-        const directLayout = localStorage.getItem(PREFERRED_LAYOUT_STORAGE_KEY) as LayoutPreset | null
-        if (directLayout && (directLayout === 'editorial' || directLayout === 'single-column' || directLayout === 'balanced')) {
+        const directLayout = localStorage.getItem(
+          PREFERRED_LAYOUT_STORAGE_KEY,
+        ) as LayoutPreset | null
+        if (
+          directLayout &&
+          (directLayout === 'editorial' ||
+            directLayout === 'single-column' ||
+            directLayout === 'balanced')
+        ) {
           savedLayout = directLayout
         }
 
@@ -96,6 +109,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   const [isEditing, setIsEditing] = useState(false)
   const [isPreviewingPrint, setIsPreviewingPrint] = useState(false)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -143,38 +157,54 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setProfile((prev) => ({ ...prev, skillCategories }))
   }, [])
 
-  const updateSectionVisibility = useCallback((visibility: Partial<SectionVisibility>) => {
-    setProfile((prev) => ({
-      ...prev,
-      sectionVisibility: {
-        ...prev.sectionVisibility,
-        ...visibility,
-      },
-    }))
-  }, [])
+  const updateSectionVisibility = useCallback(
+    (visibility: Partial<SectionVisibility>) => {
+      setProfile((prev) => ({
+        ...prev,
+        sectionVisibility: {
+          ...prev.sectionVisibility,
+          ...visibility,
+        },
+      }))
+    },
+    [],
+  )
 
-  const updatePrintSettings = useCallback((settings: Partial<PrintSettings>) => {
-    if (settings.layoutPreset) {
-      try {
-        localStorage.setItem(PREFERRED_LAYOUT_STORAGE_KEY, settings.layoutPreset)
-      } catch {
-        // Ignore storage write error
+  const updatePrintSettings = useCallback(
+    (settings: Partial<PrintSettings>) => {
+      if (settings.layoutPreset) {
+        try {
+          localStorage.setItem(
+            PREFERRED_LAYOUT_STORAGE_KEY,
+            settings.layoutPreset,
+          )
+        } catch {
+          // Ignore storage write error
+        }
       }
-    }
-    setProfile((prev) => ({
-      ...prev,
-      printSettings: {
-        ...prev.printSettings,
-        ...settings,
-      },
-    }))
-  }, [])
+      setProfile((prev) => ({
+        ...prev,
+        printSettings: {
+          ...prev.printSettings,
+          ...settings,
+        },
+      }))
+    },
+    [],
+  )
 
   const resetProfile = useCallback(() => {
     let savedLayout: LayoutPreset | undefined
     try {
-      const directLayout = localStorage.getItem(PREFERRED_LAYOUT_STORAGE_KEY) as LayoutPreset | null
-      if (directLayout && (directLayout === 'editorial' || directLayout === 'single-column' || directLayout === 'balanced')) {
+      const directLayout = localStorage.getItem(
+        PREFERRED_LAYOUT_STORAGE_KEY,
+      ) as LayoutPreset | null
+      if (
+        directLayout &&
+        (directLayout === 'editorial' ||
+          directLayout === 'single-column' ||
+          directLayout === 'balanced')
+      ) {
         savedLayout = directLayout
       }
     } catch {
@@ -194,8 +224,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const loadProfile = useCallback((data: UserProfile) => {
     let savedLayout: LayoutPreset | undefined
     try {
-      const directLayout = localStorage.getItem(PREFERRED_LAYOUT_STORAGE_KEY) as LayoutPreset | null
-      if (directLayout && (directLayout === 'editorial' || directLayout === 'single-column' || directLayout === 'balanced')) {
+      const directLayout = localStorage.getItem(
+        PREFERRED_LAYOUT_STORAGE_KEY,
+      ) as LayoutPreset | null
+      if (
+        directLayout &&
+        (directLayout === 'editorial' ||
+          directLayout === 'single-column' ||
+          directLayout === 'balanced')
+      ) {
         savedLayout = directLayout
       }
     } catch {
@@ -217,16 +254,23 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const importProfile = useCallback((data: UserProfile) => {
-    loadProfile(data)
-    showToast('Profile imported successfully')
-  }, [loadProfile, showToast])
+  const importProfile = useCallback(
+    (data: UserProfile) => {
+      loadProfile(data)
+      showToast('Profile imported successfully')
+    },
+    [loadProfile, showToast],
+  )
 
   const exportProfileJson = useCallback(() => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(profile, null, 2))
+    const dataStr =
+      'data:text/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify(profile, null, 2))
     const downloadAnchor = document.createElement('a')
     downloadAnchor.setAttribute('href', dataStr)
-    const sanitizedName = profile.basics.name.toLowerCase().replace(/[^a-z0-9]/g, '-')
+    const sanitizedName = profile.basics.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
     downloadAnchor.setAttribute('download', `${sanitizedName}-cv.json`)
     document.body.appendChild(downloadAnchor)
     downloadAnchor.click()
@@ -254,6 +298,39 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     window.print()
   }, [profile.printSettings?.printTheme])
 
+  const generatePdf = useCallback(async () => {
+    setIsGeneratingPdf(true)
+    try {
+      await trpcClient.profile.update.mutate(profile)
+
+      const res = await fetch('/api/pdf')
+      if (!res.ok) {
+        const message = await res.text().catch(() => '')
+        throw new Error(message || 'Failed to generate PDF')
+      }
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      const sanitizedName =
+        profile.basics.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '') || 'cv'
+      anchor.href = url
+      anchor.download = `${sanitizedName}.pdf`
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      URL.revokeObjectURL(url)
+      showToast('PDF generated')
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to generate PDF')
+    } finally {
+      setIsGeneratingPdf(false)
+    }
+  }, [profile, showToast])
+
   return (
     <ProfileContext.Provider
       value={{
@@ -262,6 +339,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setIsEditing,
         isPreviewingPrint,
         setIsPreviewingPrint,
+        isGeneratingPdf,
         toastMessage,
         showToast,
         updateBasics,
@@ -277,10 +355,25 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         importProfile,
         exportProfileJson,
         triggerPrint,
+        generatePdf,
       }}
     >
       {children}
     </ProfileContext.Provider>
+  )
+}
+
+export function PrintProfileProvider({
+  profile,
+  children,
+}: {
+  profile: UserProfile
+  children: ReactNode
+}) {
+  const parent = useProfile()
+  const value = useMemo(() => ({ ...parent, profile }), [parent, profile])
+  return (
+    <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
   )
 }
 

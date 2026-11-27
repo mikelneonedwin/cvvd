@@ -21,6 +21,7 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
 
   // Sync incoming projects if they differ and are not actively being edited
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- sync local tech input cache for newly added items
     setTechInputs((prev) => {
       const updated = { ...prev }
       form.projects.forEach((p) => {
@@ -68,11 +69,10 @@ export function StudioProjects({ form, setForm }: StudioProjectsProps) {
     <div className="space-y-6 animate-fadeIn">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-medium text-[var(--grey1)]">
-            Projects
-          </h2>
+          <h2 className="text-lg font-medium text-[var(--grey1)]">Projects</h2>
           <p className="text-xs text-[var(--grey3)] mt-0.5">
-            Showcase indie apps, open source contributions, tools, publications, and initiatives.
+            Showcase indie apps, open source contributions, tools, publications,
+            and initiatives.
           </p>
         </div>
         <button

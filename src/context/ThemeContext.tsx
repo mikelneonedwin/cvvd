@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+'use client'
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -20,13 +28,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState<boolean>(false)
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- hydrate client-only theme state after mount
     setMounted(true)
     const root = document.documentElement
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
     const saved = localStorage.getItem(STORAGE_KEY)
     const initialTheme: Theme =
-      saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system'
+      saved === 'light' || saved === 'dark' || saved === 'system'
+        ? saved
+        : 'system'
     setTheme(initialTheme)
 
     const computeDark = (t: Theme) => {
@@ -72,6 +83,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
 
     const currentDark = computeDark()
+    // oxlint-disable-next-line react/set-state-in-effect -- sync derived dark flag with theme/media changes
     setIsDark(currentDark)
 
     if (currentDark) {
@@ -88,7 +100,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, mounted, setTheme, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{ theme, isDark, mounted, setTheme, toggleTheme }}
+    >
       {children}
     </ThemeContext.Provider>
   )

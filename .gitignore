@@ -11,3 +11,10 @@ dist-ssr
 __unconfig*
 todos.json
 .vercel
+.next
+.next-pdf*
+.env*
+!.env.example
+data/profile.yaml
+
+
